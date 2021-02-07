@@ -20,7 +20,7 @@ M <- Dr %>% solve
 W <- Dc %>% solve
 
 ca.res <- epCA(dat, graphs = FALSE)
-
+g
 spafac.res <- sparseGSVD(X = X, LW = M, RW = W, k = 2L, init = "svd",
                        rdsLeft = rep(sqrt(nrow(X)), 2), rdsRight = rep(sqrt(ncol(X)),2))
 
