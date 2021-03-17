@@ -1,1 +1,1 @@
-# SPAFAC
+# SPAFAC (sparse factorial analysis)

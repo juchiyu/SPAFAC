@@ -1,4 +1,4 @@
-#' Group sparse Correspondence Analysis
+#' sparse Partial Least Square Correlation
 #'
 #' @param DATA the contingency table
 #' @param k the number of dimensions

@@ -1,4 +1,4 @@
-#' Group sparse Correspondence Analysis
+#' Group sparse Multiple Correspondence Analysis
 #'
 #' @param DATA the contingency table
 #' @param k the number of dimensions
