@@ -67,7 +67,7 @@ sparsePLSC <- function(X, Y, components = 0,
 
   res$d <- sSVD.res$d
   res$l <- sSVD.res$d^2
-  res$u <- sSVD.res$U[,,drop = FALSE]
+  res$u <- sSVD.res$U[,, drop = FALSE]
   res$v <- sSVD.res$V[,, drop = FALSE]
 
   res$lx <- X %*% res$u

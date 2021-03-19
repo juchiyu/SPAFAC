@@ -69,17 +69,22 @@ sparsePLSCA <- function(X, Y, k = 0, tol = .Machine$double.eps,
 
   ## skip using tol for now ##
 
+  # 1) create a function for the output
+  # 2) add a "compact" argument for the output function : keep p, d, q, Wx, Mx, Wy, My
+
   res$d <- sGSVD.res$d
   res$l <- sGSVD.res$d^2
   res$u <- sGSVD.res$U[,,drop = FALSE]
   res$v <- sGSVD.res$V[,, drop = FALSE]
-  res$p <- sGSVD.res$p
-  res$q <- sGSVD.res$q
+  res$pdq$p <- sGSVD.res$p # put this in a pdq list
+  res$pdq$q <- sGSVD.res$q
 
   res$lx <- X4gsvd %*% Wx %*% res$u
   res$ly <- Y4gsvd %*% Wy %*% res$v
-  res$fi <- Wx %*% res$u
-  res$fj <- Wy %*% res$v
+  res$sx <- Wx %*% res$p
+  res$sy <- Wy %*% res$q
+  res$fi <- Wx %*% res$p %*% res$d
+  res$fj <- Wy %*% res$q %*% res$d
   res$iter <- sGSVD.res$iter
 
   rownames(res$fi) <- rownames(res$u) <- colnames(X)
