@@ -42,16 +42,16 @@ sparseCA <- function(
               epsALS = 1e-10, epsPOCS = 1e-10) {
 
 
-  mRP <- ExPosition::makeRowProfiles(DATA, weights = NULL, masses = NULL, hellinger = FALSE)
-  # N <- sum(DATA)
-  # X <- 1/N * DATA
-  # Lv <- rowSums(X)
-  # Rv <- colSums(X)
-  # if (doublecentering) X <- X - Lv %*% t(Rv)
-  # LW <- 1/sqrt(Lv)
-  # RW <- 1/sqrt(Rv)
+  # mRP <- ExPosition::makeRowProfiles(DATA, weights = NULL, masses = NULL, hellinger = FALSE)
+  N <- sum(DATA)
+  X <- 1/N * DATA
+  Lv <- rowSums(X)
+  Rv <- colSums(X)
+  if (doublecentering) X <- X - Lv %*% t(Rv)
+  LW <- 1/Lv
+  RW <- 1/Rv
 
-  res.spgsvd <- sparseGSVD(mRP$deviations, LW = mRP$masses, RW = mRP$weights, k = k, tol = .Machine$double.eps,
+  res.spgsvd <- sparseGSVD(X, LW = LW, RW = RW, k = k, tol = .Machine$double.eps,
          init = init, initLeft = initLeft, initRight = initRight, seed = NULL,
          rdsLeft = rdsLeft, rdsRight = rdsRight,
          grpLeft = grpLeft, grpRight = grpRight,
@@ -64,5 +64,10 @@ sparseCA <- function(
          itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
          epsALS = epsALS, epsPOCS = epsPOCS)
 
+  class(res.spgsvd) <- c("sSVD", "sGSVD", "list")
+  res <- spafac.out(sGSVD.res, X = DATA, LW = LW, RW = RW)
+  res$X.preproc <- X
+
+  return(res)
 
 }
