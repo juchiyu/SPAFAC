@@ -63,6 +63,8 @@ sparsePLSC <- function(X, Y, components = 0,
                         itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
                         epsALS = epsALS, epsPOCS = epsPOCS)
 
+  d, u, v, X, Y
+
   ## skip using tol for now ##
 
   res$d <- sSVD.res$d
@@ -82,6 +84,6 @@ sparsePLSC <- function(X, Y, components = 0,
   rownames(res$lx) <- rownames(X)
   rownames(res$ly) <- rownames(Y)
 
-  class(res) <- c("splsc", "sGSVD", "list")
+  class(res) <- c("sPLS", "sSVD", "list")
   return(res)
 }

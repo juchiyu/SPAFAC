@@ -1,0 +1,40 @@
+spafac.out <- function(res, X, Y = NULL, compact = FALSE) {
+  out <- list()
+  if(is_sSVD(res)) {
+    out$svd$d <- res$d
+    out$svd$u <- res$U
+    out$svd$v <- res$V
+    out$iter <- res$iter
+    out$eig <- res$d^2
+    out$fi <- res$fi # t(t(res$U) * res$d)
+    out$fj <- res$fj
+  }
+
+  if(is_sGSVD(res)) {
+    out$gsvd$d <- res$d
+    out$gsvd$p <- res$p # res$U / sqrt_LW
+    out$gsvd$q <- res$q
+    out$gsvd$LW <- res$LW
+    out$gsvd$RW <- res$RW
+    out$fi <- res$fi # t(t(LW %*% res$p) * res$d)
+    out$fj <- res$fj
+  }
+
+  out$ci <- t(t(res$u) * res$d)^2
+  out$cj <- t(t(res$v) * res$d)^2
+
+  if(is_sPLS(res)) {
+    out$lx <- X %*% res$U
+    out$ly <- Y %*% res$V
+    out$sx <- res$u
+    out$sy <- res$v
+    if(is_sGSVD(res)){
+      out$lx <- res$Wx %*% out$lx
+      out$ly <- res$Wy %*% out$ly
+      out$sx <- res$Wx %*% out$p
+      out$sy <- res$Wy %*% out$q
+    }
+  }
+
+  return(out)
+}

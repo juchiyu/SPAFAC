@@ -93,7 +93,9 @@ sparsePLSCA <- function(X, Y, k = 0, tol = .Machine$double.eps,
   rownames(res$lx) <- rownames(X)
   rownames(res$ly) <- rownames(Y)
 
-  class(res) <- c("splsca", "sGSVD", "list")
+  d, u, v, p, q, Wx, Wy, X, Y
+
+  class(res) <- c("sPLS", "sSVD", "sGSVD", "list")
   return(res)
 
 }
