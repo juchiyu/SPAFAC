@@ -48,10 +48,10 @@ sparsePLSC <- function(X, Y, components = 0,
                        itermaxALS = 1000, itermaxPOCS = 1000,
                        epsALS = 1e-10, epsPOCS = 1e-10){
 
-  X <- scale(X, center = center_X, scale = scale_X)
-  Y <- scale(Y, center = center_Y, scale = scale_Y)
+  X4svd <- scale(X, center = center_X, scale = scale_X)
+  Y4svd <- scale(Y, center = center_Y, scale = scale_Y)
 
-  sSVD.res <- sparseSVD(X = X, Y = Y, k = components,
+  sSVD.res <- sparseGSVD(X = X4svd, Y = Y4svd, k = components,
                         init = init, initLeft = initLeft, initRight = initRight, seed = seed,
                         rdsLeft = rdsLeft, rdsRight = rdsRight,
                         grpLeft = grpLeft, grpRight = grpRight,
@@ -63,7 +63,13 @@ sparsePLSC <- function(X, Y, components = 0,
                         itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
                         epsALS = epsALS, epsPOCS = epsPOCS)
 
-  d, u, v, X, Y
+  class(sSVD.res) <- c("sPLS", "sSVD", "list")
+
+  res <- spafac.out(sSVD.res, X = X, Y = Y)
+  res$X.preproc <- X4svd
+  res$Y.preproc <- Y4svd
+
+  return(res)
 
   ## skip using tol for now ##
 
@@ -84,6 +90,5 @@ sparsePLSC <- function(X, Y, components = 0,
   rownames(res$lx) <- rownames(X)
   rownames(res$ly) <- rownames(Y)
 
-  class(res) <- c("sPLS", "sSVD", "list")
   return(res)
 }
