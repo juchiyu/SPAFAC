@@ -70,25 +70,4 @@ sparsePLSC <- function(X, Y, components = 0,
   res$Y.preproc <- Y4svd
 
   return(res)
-
-  ## skip using tol for now ##
-
-  res$d <- sSVD.res$d
-  res$l <- sSVD.res$d^2
-  res$u <- sSVD.res$U[,, drop = FALSE]
-  res$v <- sSVD.res$V[,, drop = FALSE]
-
-  res$lx <- X %*% res$u
-  res$ly <- Y %*% res$v
-  res$fi <- t(t(res$u) * res$d)
-  res$fj <- t(t(res$v) * res$d)
-  res$iter <- sSVD.res$iter
-
-  rownames(res$fi) <- rownames(res$u) <- colnames(X)
-  rownames(res$fj) <- rownames(res$v) <- colnames(Y)
-
-  rownames(res$lx) <- rownames(X)
-  rownames(res$ly) <- rownames(Y)
-
-  return(res)
 }
