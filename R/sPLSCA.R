@@ -51,17 +51,17 @@ sparsePLSCA <- function(X, Y, k = 0, tol = .Machine$double.eps,
   Wy <- diag((Y_ca_preproc$w)^-1)
 
   sGSVD.res <- sparseGSVD(X = X4gsvd, Y = Y4gsvd, LW = Wx, RW = Wy,
-             k = components,
-             init = init, initLeft = initLeft, initRight = initRight, seed = seed,
-             rdsLeft = rdsLeft, rdsRight = rdsRight,
-             grpLeft = grpLeft, grpRight = grpRight,
-             orthogonality = orthogonality,
-             OrthSpaceLeft = OrthSpaceLeft, OrthSpaceRight = OrthSpaceRight,
-             projPriority = projPriority,
-             projPriorityLeft = projPriority,
-             projPriorityRight = projPriority,
-             itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
-             epsALS = epsALS, epsPOCS = epsPOCS)
+                          k = components,
+                          init = init, initLeft = initLeft, initRight = initRight, seed = seed,
+                          rdsLeft = rdsLeft, rdsRight = rdsRight,
+                          grpLeft = grpLeft, grpRight = grpRight,
+                          orthogonality = orthogonality,
+                          OrthSpaceLeft = OrthSpaceLeft, OrthSpaceRight = OrthSpaceRight,
+                          projPriority = projPriority,
+                          projPriorityLeft = projPriority,
+                          projPriorityRight = projPriority,
+                          itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
+                          epsALS = epsALS, epsPOCS = epsPOCS)
   class(sGSVD.res) <- c("sPLS", "sSVD", "sGSVD", "list")
 
   res <- spafac.out(sGSVD.res, X = X, Y = Y, LW = Wx, RW = Wy)

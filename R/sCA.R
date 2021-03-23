@@ -28,18 +28,18 @@
 #'
 #' @examples
 sparseCA <- function(
-              DATA, k = 0, tol = .Machine$double.eps,
-              doublecentering = TRUE,
-              init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
-              rdsLeft = rep(1, R), rdsRight = rep(1, R),
-              grpLeft = NULL, grpRight = NULL,
-              orthogonality = "loadings",
-              OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
-              projPriority = "orth",
-              projPriorityLeft = projPriority,
-              projPriorityRight = projPriority,
-              itermaxALS = 1000, itermaxPOCS = 1000,
-              epsALS = 1e-10, epsPOCS = 1e-10) {
+  DATA, k = 0, tol = .Machine$double.eps,
+  doublecentering = TRUE,
+  init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
+  rdsLeft = rep(1, R), rdsRight = rep(1, R),
+  grpLeft = NULL, grpRight = NULL,
+  orthogonality = "loadings",
+  OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
+  projPriority = "orth",
+  projPriorityLeft = projPriority,
+  projPriorityRight = projPriority,
+  itermaxALS = 1000, itermaxPOCS = 1000,
+  epsALS = 1e-10, epsPOCS = 1e-10) {
 
 
   # mRP <- ExPosition::makeRowProfiles(DATA, weights = NULL, masses = NULL, hellinger = FALSE)
@@ -51,20 +51,20 @@ sparseCA <- function(
   LW <- 1/Lv
   RW <- 1/Rv
 
-  res.spgsvd <- sparseGSVD(X, LW = LW, RW = RW, k = k, tol = .Machine$double.eps,
-         init = init, initLeft = initLeft, initRight = initRight, seed = NULL,
-         rdsLeft = rdsLeft, rdsRight = rdsRight,
-         grpLeft = grpLeft, grpRight = grpRight,
-         orthogonality = orthogonality,
-         OrthSpaceLeft = OrthSpaceLeft,
-         OrthSpaceRight = OrthSpaceRight,
-         projPriority = projPriority,
-         projPriorityLeft = projPriorityLeft,
-         projPriorityRight = projPriorityRight,
-         itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
-         epsALS = epsALS, epsPOCS = epsPOCS)
+  sGSVD.res <- sparseGSVD(X, LW = LW, RW = RW, k = k, tol = .Machine$double.eps,
+                          init = init, initLeft = initLeft, initRight = initRight, seed = NULL,
+                          rdsLeft = rdsLeft, rdsRight = rdsRight,
+                          grpLeft = grpLeft, grpRight = grpRight,
+                          orthogonality = orthogonality,
+                          OrthSpaceLeft = OrthSpaceLeft,
+                          OrthSpaceRight = OrthSpaceRight,
+                          projPriority = projPriority,
+                          projPriorityLeft = projPriorityLeft,
+                          projPriorityRight = projPriorityRight,
+                          itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
+                          epsALS = epsALS, epsPOCS = epsPOCS)
 
-  class(res.spgsvd) <- c("sSVD", "sGSVD", "list")
+  class(sGSVD.res) <- c("sSVD", "sGSVD", "list")
   res <- spafac.out(sGSVD.res, X = DATA, LW = LW, RW = RW)
   res$X.preproc <- X
 

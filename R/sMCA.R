@@ -50,20 +50,20 @@ sparseMCA <- function(
   LW <- 1/Lv
   RW <- 1/Rv
 
-  res.spgsvd <- sparseGSVD(X, LW = LW, RW = RW, k = k, tol = .Machine$double.eps,
-                           init = init, initLeft = initLeft, initRight = initRight, seed = NULL,
-                           rdsLeft = rdsLeft, rdsRight = rdsRight,
-                           grpLeft = grpLeft, grpRight = grpRight,
-                           orthogonality = orthogonality,
-                           OrthSpaceLeft = OrthSpaceLeft,
-                           OrthSpaceRight = OrthSpaceRight,
-                           projPriority = projPriority,
-                           projPriorityLeft = projPriorityLeft,
-                           projPriorityRight = projPriorityRight,
-                           itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
-                           epsALS = epsALS, epsPOCS = epsPOCS)
+  sGSVD.res <- sparseGSVD(X, LW = LW, RW = RW, k = k, tol = .Machine$double.eps,
+                          init = init, initLeft = initLeft, initRight = initRight, seed = NULL,
+                          rdsLeft = rdsLeft, rdsRight = rdsRight,
+                          grpLeft = grpLeft, grpRight = grpRight,
+                          orthogonality = orthogonality,
+                          OrthSpaceLeft = OrthSpaceLeft,
+                          OrthSpaceRight = OrthSpaceRight,
+                          projPriority = projPriority,
+                          projPriorityLeft = projPriorityLeft,
+                          projPriorityRight = projPriorityRight,
+                          itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
+                          epsALS = epsALS, epsPOCS = epsPOCS)
 
-  class(res.spgsvd) <- c("sSVD", "sGSVD", "list")
+  class(sGSVD.res) <- c("sSVD", "sGSVD", "list")
   res <- spafac.out(sGSVD.res, X = DATA, LW = LW, RW = RW)
   res$X.preproc <- X
 

@@ -52,16 +52,16 @@ sparsePLSC <- function(X, Y, components = 0,
   Y4svd <- scale(Y, center = center_Y, scale = scale_Y)
 
   sSVD.res <- sparseGSVD(X = X4svd, Y = Y4svd, k = components,
-                        init = init, initLeft = initLeft, initRight = initRight, seed = seed,
-                        rdsLeft = rdsLeft, rdsRight = rdsRight,
-                        grpLeft = grpLeft, grpRight = grpRight,
-                        orthogonality = orthogonality,
-                        OrthSpaceLeft = OrthSpaceLeft, OrthSpaceRight = OrthSpaceRight,
-                        projPriority = projPriority,
-                        projPriorityLeft = projPriority,
-                        projPriorityRight = projPriority,
-                        itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
-                        epsALS = epsALS, epsPOCS = epsPOCS)
+                         init = init, initLeft = initLeft, initRight = initRight, seed = seed,
+                         rdsLeft = rdsLeft, rdsRight = rdsRight,
+                         grpLeft = grpLeft, grpRight = grpRight,
+                         orthogonality = orthogonality,
+                         OrthSpaceLeft = OrthSpaceLeft, OrthSpaceRight = OrthSpaceRight,
+                         projPriority = projPriority,
+                         projPriorityLeft = projPriority,
+                         projPriorityRight = projPriority,
+                         itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
+                         epsALS = epsALS, epsPOCS = epsPOCS)
 
   class(sSVD.res) <- c("sPLS", "sSVD", "list")
 
