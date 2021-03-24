@@ -41,9 +41,20 @@ sparsePLSCA <- function(X, Y, k = 0, tol = .Machine$double.eps,
                         projPriorityRight = projPriority,
                         itermaxALS = 1000, itermaxPOCS = 1000,
                         epsALS = 1e-10, epsPOCS = 1e-10){
+  X_ca_preproc <- ca_preproc(X)
+  Y_ca_preproc <- ca_preproc(Y)
 
-  X4gsvd <- ca_preproc(X)$Z
-  Y4gsvd <- ca_preproc(Y)$Z
+  if (doublecentering_X) {
+    X4gsvd <- X_ca_preproc$Z
+  }else{
+    X4gsvd <- X_ca_preproc$O
+  }
+
+  if (doublecentering_Y) {
+    Y4gsvd <- Y_ca_preproc$Z
+  }else{
+    Y4gsvd <- Y_ca_preproc$O
+  }
 
   Mx <- diag((X_ca_preproc$m)^-1)
   Wx <- diag((X_ca_preproc$w)^-1)

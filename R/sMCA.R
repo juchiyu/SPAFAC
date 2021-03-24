@@ -31,7 +31,7 @@ sparseMCA <- function(
   DATA, k = 0, tol = .Machine$double.eps,
   doublecentering = TRUE,
   init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
-  rdsLeft = rep(1, R), rdsRight = rep(1, R),
+  rdsLeft = rep(1, k), rdsRight = rep(1, k),
   grpLeft = NULL, grpRight = NULL,
   orthogonality = "loadings",
   OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
@@ -41,9 +41,10 @@ sparseMCA <- function(
   itermaxALS = 1000, itermaxPOCS = 1000,
   epsALS = 1e-10, epsPOCS = 1e-10) {
 
+  DATA.disj <- tab_disjonctif(DATA)
 
-  N <- sum(DATA)
-  X <- 1/N * DATA
+  N <- sum(DATA.disj)
+  X <- 1/N * DATA.disj
   Lv <- rowSums(X)
   Rv <- colSums(X)
   if (doublecentering) X <- X - Lv %*% t(Rv)
@@ -65,7 +66,8 @@ sparseMCA <- function(
 
   class(sGSVD.res) <- c("sSVD", "sGSVD", "list")
   res <- spafac.out(sGSVD.res, X = DATA, LW = LW, RW = RW)
-  res$X.preproc <- X
+  res$data$X.disj <- DATA.disj
+  res$data$X.preproc <- X
 
   return(res)
 

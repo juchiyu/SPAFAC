@@ -20,8 +20,8 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, compact = FALSE) {
     out$fj <- res$fj
   }
 
-  out$ci <- t(t(res$u) * res$d)^2
-  out$cj <- t(t(res$v) * res$d)^2
+  out$ci <- LW * (res$p)^2
+  out$cj <- RW * (res$q)^2
 
   if(is_sPLS(res)) {
     out$lx <- X %*% res$U
