@@ -29,7 +29,7 @@ tab_disjonctif <- function (X) {
     }else{
       s <- t(stmp)
     }
-    colnames(s) <- paste(colnames(X)[i], lev, sep = "_")
+    colnames(s) <- paste(colnames(X)[i], lev, sep = ".")
     s
   })
 

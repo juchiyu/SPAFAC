@@ -10,8 +10,8 @@
 #' @param seed
 #' @param rdsLeft
 #' @param rdsRight
-#' @param grpLeft
-#' @param grpRight
+#' @param grpLeft the grouping vector for the rows
+#' @param grpRight the grouping vector for the columns
 #' @param orthogonality
 #' @param OrthSpaceLeft
 #' @param OrthSpaceRight
@@ -42,6 +42,7 @@ sparseMCA <- function(
   epsALS = 1e-10, epsPOCS = 1e-10) {
 
   DATA.disj <- tab_disjonctif(DATA)
+  rownames(DATA.disj) <- rownames(DATA)
 
   N <- sum(DATA.disj)
   X <- 1/N * DATA.disj
