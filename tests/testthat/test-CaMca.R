@@ -66,7 +66,7 @@ gsvd.wine.res <- gsvd(as.matrix(X.mca.proc), LW = diag(LW.mca), RW = diag(RW.mca
 
 smca.wine.res <- sparseMCA(as.matrix(X.mca), components = 3L, rdsLeft = rep(sqrt(nrow(X.mca)), 3), rdsRight = rep(sqrt(Jk), 3), grpRight = var.grp)
 
-test_that("sparseCA gives back plain CA", {
+test_that("sparseMCA gives back plain MCA", {
   expect_equal(abs(smca.wine.res$gsvd$p), abs(mca.wine.res$ExPosition.Data$M * mca.wine.res$ExPosition.Data$pdq$p), tolerance = 1e-10)
   expect_equal(abs(smca.wine.res$gsvd$p), abs(gsvd.wine.res$p), tolerance = tol)
   expect_equal(abs(smca.wine.res$gsvd$q), abs(mca.wine.res$ExPosition.Data$pdq$q[rownames(smca.wine.res$gsvd$q),]), tolerance = tol)
