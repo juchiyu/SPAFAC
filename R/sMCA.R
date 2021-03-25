@@ -28,10 +28,10 @@
 #'
 #' @examples
 sparseMCA <- function(
-  DATA, k = 0, tol = .Machine$double.eps,
+  DATA, components = 0, tol = .Machine$double.eps,
   doublecentering = TRUE,
   init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
-  rdsLeft = rep(1, k), rdsRight = rep(1, k),
+  rdsLeft = rep(1, components), rdsRight = rep(1, components),
   grpLeft = NULL, grpRight = NULL,
   orthogonality = "loadings",
   OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
@@ -52,7 +52,7 @@ sparseMCA <- function(
   LW <- 1/Lv
   RW <- 1/Rv
 
-  sGSVD.res <- sparseGSVD(X, LW = LW, RW = RW, k = k, tol = .Machine$double.eps,
+  sGSVD.res <- sparseGSVD(X, LW = LW, RW = RW, k = components, tol = .Machine$double.eps,
                           init = init, initLeft = initLeft, initRight = initRight, seed = NULL,
                           rdsLeft = rdsLeft, rdsRight = rdsRight,
                           grpLeft = grpLeft, grpRight = grpRight,

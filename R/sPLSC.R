@@ -40,13 +40,23 @@ sparsePLSC <- function(X, Y, components = 0,
                        init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
                        rdsLeft = rep(1, components), rdsRight = rep(1, components),
                        grpLeft = NULL, grpRight = NULL,
-                       orthogonality = "loadings",
+                       orthogonality = "both",
                        OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
                        projPriority = "orth",
                        projPriorityLeft = projPriority,
                        projPriorityRight = projPriority,
                        itermaxALS = 1000, itermaxPOCS = 1000,
                        epsALS = 1e-10, epsPOCS = 1e-10){
+
+  if ( !is.matrix(X) ){
+    X <- as.matrix(X,rownames.force = TRUE)
+  }
+  Y_is_missing <- missing(Y)
+  if( !Y_is_missing ){
+    if ( !is.matrix(Y) ){
+      Y <- as.matrix(Y, rownames.force = TRUE)
+    }
+  }
 
   X4svd <- scale(X, center = center_X, scale = scale_X)
   Y4svd <- scale(Y, center = center_Y, scale = scale_Y)
@@ -65,7 +75,7 @@ sparsePLSC <- function(X, Y, components = 0,
 
   class(sSVD.res) <- c("sPLS", "sSVD", "list")
 
-  res <- spafac.out(sSVD.res, X = X, Y = Y)
+  res <- spafac.out(sSVD.res, X = X4svd, Y = Y4svd)
   res$X.preproc <- X4svd
   res$Y.preproc <- Y4svd
 
