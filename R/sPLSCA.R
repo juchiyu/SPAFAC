@@ -29,10 +29,10 @@
 #'
 #' @examples
 
-sparsePLSCA <- function(X, Y, k = 0, tol = .Machine$double.eps,
+sparsePLSCA <- function(X, Y, components = 2L, tol = .Machine$double.eps,
                         doublecentering_X = TRUE, doublecentering_Y = TRUE,
                         init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
-                        rdsLeft = rep(1, k), rdsRight = rep(1, k),
+                        rdsLeft = rep(1, components), rdsRight = rep(1, components),
                         grpLeft = NULL, grpRight = NULL,
                         orthogonality = "both",
                         OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
