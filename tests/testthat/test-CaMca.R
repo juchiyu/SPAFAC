@@ -27,7 +27,7 @@ gsvd.authors.res <- gsvd(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW))
 # run sCA
 sca.authors.res <- sparseCA(as.matrix(X.ca), components = 2L, rdsLeft = rep(sqrt(nrow(X.ca)), 2), rdsRight = rep(sqrt(ncol(X.ca)), 2))
 
-test_that("sparseCA gives back plain CA", {
+test_that("sparseCA with no sparsification gives back plain CA", {
   expect_equal(sca.words.res$gsvd$p, ca.authors.res$ExPosition.Data$M * ca.authors.res$ExPosition.Data$pdq$p, tolerance = tol)
   expect_equal(sca.words.res$gsvd$p, gsvd.words.res$p, tolerance = tol)
   expect_equal(sca.words.res$gsvd$q, ca.authors.res$ExPosition.Data$pdq$q, tolerance = tol)
@@ -68,7 +68,7 @@ gsvd.wine.res <- gsvd(as.matrix(X.mca.proc), LW = diag(LW.mca), RW = diag(RW.mca
 # run sMCA
 smca.wine.res <- sparseMCA(as.matrix(X.mca), components = 3L, rdsLeft = rep(sqrt(nrow(X.mca)), 3), rdsRight = rep(sqrt(Jk), 3), grpRight = var.grp)
 
-test_that("sparseMCA gives back plain MCA", {
+test_that("sparseMCA with no sparsification gives back plain MCA", {
   expect_equal(abs(smca.wine.res$gsvd$p), abs(mca.wine.res$ExPosition.Data$M * mca.wine.res$ExPosition.Data$pdq$p), tolerance = 1e-10)
   expect_equal(abs(smca.wine.res$gsvd$p), abs(gsvd.wine.res$p), tolerance = tol)
   expect_equal(abs(smca.wine.res$gsvd$q), abs(mca.wine.res$ExPosition.Data$pdq$q[rownames(smca.wine.res$gsvd$q),]), tolerance = tol)
