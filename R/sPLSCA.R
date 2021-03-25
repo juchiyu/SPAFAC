@@ -75,7 +75,7 @@ sparsePLSCA <- function(X, Y, k = 0, tol = .Machine$double.eps,
                           epsALS = epsALS, epsPOCS = epsPOCS)
   class(sGSVD.res) <- c("sPLS", "sSVD", "sGSVD", "list")
 
-  res <- spafac.out(sGSVD.res, X = X, Y = Y, LW = Wx, RW = Wy)
+  res <- spafac.out(sGSVD.res, X = X4gsvd, Y = Y4gsvd, LW = Wx, RW = Wy)
   res$X.preproc <- X4gsvd
   res$Y.preproc <- Y4gsvd
 
