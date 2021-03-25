@@ -1,4 +1,3 @@
-## test CA
 library(ExPosition)
 library(sGSVD)
 library(GSVD)
@@ -18,13 +17,14 @@ X.ca.proc <- X.ca.proc - Lv %*% t(Rv)
 LW <- 1/Lv
 RW <- 1/Rv
 
-gsvd.authors.res <- gsvd(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW))
 
 # run CA
 ca.authors.res <- epCA(X.ca, graphs = FALSE)
-
-sGSVD.res <- sparseGSVD(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW), k = 2L, init = "svd", rdsLeft = rep(sqrt(nrow(X.ca)), 2), rdsRight = rep(sqrt(ncol(X.ca)), 2))
-
+# run gsvd
+gsvd.authors.res <- gsvd(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW))
+# # run sGSVD
+# sGSVD.res <- sparseGSVD(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW), k = 2L, init = "svd", rdsLeft = rep(sqrt(nrow(X.ca)), 2), rdsRight = rep(sqrt(ncol(X.ca)), 2))
+# run sCA
 sca.authors.res <- sparseCA(as.matrix(X.ca), components = 2L, rdsLeft = rep(sqrt(nrow(X.ca)), 2), rdsRight = rep(sqrt(ncol(X.ca)), 2))
 
 test_that("sparseCA gives back plain CA", {
@@ -55,15 +55,17 @@ LW.mca <- 1/Lv.mca
 RW.mca <- 1/Rv.mca
 rownames(X.mca.proc) <- rownames(X.mca)
 
-mca.wine.res <- epMCA(X.mca, graphs = FALSE)
 
 # number of levels after nominalizing
 Jk <- length(unlist(sapply(X.mca, levels)))
 # get grping vector
 var.grp <- sub("\\..*", "", names(unlist(sapply(X.mca, levels))))
 
+# run MCA
+mca.wine.res <- epMCA(X.mca, graphs = FALSE)
+# run gsvd
 gsvd.wine.res <- gsvd(as.matrix(X.mca.proc), LW = diag(LW.mca), RW = diag(RW.mca),k = 3)
-
+# run sMCA
 smca.wine.res <- sparseMCA(as.matrix(X.mca), components = 3L, rdsLeft = rep(sqrt(nrow(X.mca)), 3), rdsRight = rep(sqrt(Jk), 3), grpRight = var.grp)
 
 test_that("sparseMCA gives back plain MCA", {
