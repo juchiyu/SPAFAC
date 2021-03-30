@@ -1,9 +1,19 @@
 spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, compact = FALSE) {
   if ( is.vector(LW) ){
     LW <- diag(LW)
+    rownames(LW) <- colnames(LW) <- colnames(X)
   }
   if ( is.vector(RW) ){
     RW <- diag(RW)
+    rownames(RW) <- colnames(RW) <- colnames(Y)
+  }
+  if ( is.vector(LM) ){
+    LM <- diag(LM)
+    rownames(LM) <- colnames(LM) <- rownames(X)
+  }
+  if ( is.vector(RM) ){
+    RM <- diag(RM)
+    rownames(RM) <- colnames(RM) <- rownames(Y)
   }
   out <- list()
   if(is_sSVD(res)) {
@@ -29,8 +39,6 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     out$ci <- LW %*% (res$p)^2
     out$cj <- RW %*% (res$q)^2
   }
-
-
 
   if(is_sPLS(res)) {
     out$lx <- X %*% res$U
