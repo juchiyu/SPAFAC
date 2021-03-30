@@ -47,18 +47,17 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
       out$lx <- (t(t(X) * LW) * sqrt(LM)) %*% res$p # sqrt_psd_matrix(LM) %*% X  %*% out$gsvd$LW %*% res$p
       out$ly <- (t(t(Y) * RW) * sqrt(RM)) %*% res$q # sqrt_psd_matrix(RM) %*% Y  %*% out$gsvd$RW %*% res$q
       # the next two are from the paper
-      out$lx.noMx <- t(t(X) * LW) %*% res$p # X %*% out$gsvd$LW %*% res$p
-      out$ly.noMy <- t(t(Y) * RW) %*% res$q # Y %*% out$gsvd$RW %*% res$q
-      out$sx <- out$gsvd$LW %*% out$gsvd$p
-      out$sy <- out$gsvd$RW %*% out$gsvd$q
+      out$lx.noMx <- (t(t(X) * LW)) %*% res$p # X %*% out$gsvd$LW %*% res$p
+      out$ly.noMy <- (t(t(Y) * RW)) %*% res$q # Y %*% out$gsvd$RW %*% res$q
+      out$sx <- out$gsvd$p * LW # out$gsvd$LW %*% out$gsvd$p
+      out$sy <- out$gsvd$q * RW # out$gsvd$RW %*% out$gsvd$q
+      # rownames(out$lx.noMx) <- rownames(X)
+      # rownames(out$ly.noMy) <- rownames(Y)
     }
-    rownames(out$sx) <- colnames(X)
-    rownames(out$sy) <- colnames(Y)
-    rownames(out$lx) <- rownames(X)
-    rownames(out$ly) <- rownames(Y)
-    rownames(out$lx.noMx) <- rownames(X)
-    rownames(out$ly.noMy) <- rownames(Y)
-
+    # rownames(out$sx) <- colnames(X)
+    # rownames(out$sy) <- colnames(Y)
+    # rownames(out$lx) <- rownames(X)
+    # rownames(out$ly) <- rownames(Y)
   }
 
   return(out)
