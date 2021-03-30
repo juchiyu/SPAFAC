@@ -41,6 +41,16 @@ sparsePLSCA <- function(X, Y, components = 2L, tol = .Machine$double.eps,
                         projPriorityRight = projPriority,
                         itermaxALS = 1000, itermaxPOCS = 1000,
                         epsALS = 1e-10, epsPOCS = 1e-10){
+  if ( !is.matrix(X) ){
+    X <- as.matrix(X,rownames.force = TRUE)
+  }
+  Y_is_missing <- missing(Y)
+  if( !Y_is_missing ){
+    if ( !is.matrix(Y) ){
+      Y <- as.matrix(Y, rownames.force = TRUE)
+    }
+  }
+
   X_ca_preproc <- ca_preproc(X)
   Y_ca_preproc <- ca_preproc(Y)
 
@@ -61,7 +71,7 @@ sparsePLSCA <- function(X, Y, components = 2L, tol = .Machine$double.eps,
   My <- diag((Y_ca_preproc$m)^-1)
   Wy <- diag((Y_ca_preproc$w)^-1)
 
-  sGSVD.res <- sparseGSVD(X = X4gsvd, Y = Y4gsvd, LW = Wx, RW = Wy,
+  sGSVD.res <- sparseGSVD(X = X4gsvd, Y = Y4gsvd, LW = Wx, RW = Wy, LM = Mx, RM = My,
                           k = components,
                           init = init, initLeft = initLeft, initRight = initRight, seed = seed,
                           rdsLeft = rdsLeft, rdsRight = rdsRight,
@@ -75,7 +85,7 @@ sparsePLSCA <- function(X, Y, components = 2L, tol = .Machine$double.eps,
                           epsALS = epsALS, epsPOCS = epsPOCS)
   class(sGSVD.res) <- c("sPLS", "sSVD", "sGSVD", "list")
 
-  res <- spafac.out(sGSVD.res, X = X4gsvd, Y = Y4gsvd, LW = Wx, RW = Wy)
+  res <- spafac.out(sGSVD.res, X = X4gsvd, Y = Y4gsvd, LW = Wx, RW = Wy, LM = Mx, RM = My)
   res$X.preproc <- X4gsvd
   res$Y.preproc <- Y4gsvd
 

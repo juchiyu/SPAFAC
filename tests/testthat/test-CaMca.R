@@ -21,11 +21,11 @@ RW <- 1/Rv
 # run CA
 ca.authors.res <- epCA(X.ca, graphs = FALSE)
 # run gsvd
-gsvd.authors.res <- gsvd(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW))
+gsvd.words.res <- gsvd(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW))
 # # run sGSVD
 # sGSVD.res <- sparseGSVD(as.matrix(X.ca.proc), LW = diag(LW), RW = diag(RW), k = 2L, init = "svd", rdsLeft = rep(sqrt(nrow(X.ca)), 2), rdsRight = rep(sqrt(ncol(X.ca)), 2))
 # run sCA
-sca.authors.res <- sparseCA(as.matrix(X.ca), components = 2L, rdsLeft = rep(sqrt(nrow(X.ca)), 2), rdsRight = rep(sqrt(ncol(X.ca)), 2))
+sca.words.res <- sparseCA(as.matrix(X.ca), components = 2L, rdsLeft = rep(sqrt(nrow(X.ca)), 2), rdsRight = rep(sqrt(ncol(X.ca)), 2))
 
 test_that("sparseCA with no sparsification gives back plain CA", {
   expect_equal(sca.words.res$gsvd$p, ca.authors.res$ExPosition.Data$M * ca.authors.res$ExPosition.Data$pdq$p, tolerance = tol)

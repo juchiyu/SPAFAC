@@ -1,4 +1,10 @@
-spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, compact = FALSE) {
+spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, compact = FALSE) {
+  if ( is.vector(LW) ){
+    LW <- diag(LW)
+  }
+  if ( is.vector(RW) ){
+    RW <- diag(RW)
+  }
   out <- list()
   if(is_sSVD(res)) {
     out$svd$d <- res$d
@@ -20,8 +26,8 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, compact = FALSE) {
     out$gsvd$RW <- RW
     out$fi <- res$fi # t(t(LW %*% res$p) * res$d)
     out$fj <- res$fj
-    out$ci <- LW * (res$p)^2
-    out$cj <- RW * (res$q)^2
+    out$ci <- LW %*% (res$p)^2
+    out$cj <- RW %*% (res$q)^2
   }
 
 
@@ -32,15 +38,21 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, compact = FALSE) {
     out$sx <- res$U
     out$sy <- res$V
     if(is_sGSVD(res)){
-      out$lx <- res$Wx %*% out$lx
-      out$ly <- res$Wy %*% out$ly
-      out$sx <- res$Wx %*% out$p
-      out$sy <- res$Wy %*% out$q
+      out$gsvd$LM <- LM
+      out$gsvd$RM <- RM
+      out$lx <- sqrt_psd_matrix(LM) %*% X  %*% out$gsvd$LW %*% res$p
+      out$ly <- sqrt_psd_matrix(RM) %*% Y  %*% out$gsvd$RW %*% res$q
+      out$lx.noMx <- X %*% out$gsvd$LW %*% res$p # this is from the paper
+      out$ly.noMy <- Y %*% out$gsvd$RW %*% res$q
+      out$sx <- out$gsvd$LW %*% out$gsvd$p
+      out$sy <- out$gsvd$RW %*% out$gsvd$q
     }
     rownames(out$sx) <- colnames(X)
     rownames(out$sy) <- colnames(Y)
     rownames(out$lx) <- rownames(X)
     rownames(out$ly) <- rownames(Y)
+    rownames(out$lx.noMx) <- rownames(X)
+    rownames(out$ly.noMy) <- rownames(Y)
   }
 
   return(out)
