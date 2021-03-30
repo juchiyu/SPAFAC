@@ -10,6 +10,6 @@ library(testthat)
 #   credentials = git2r::cred_user_pass("juchiyu", getPass::getPass())
 # )
 #
-# library(SPAFAC)
+library(SPAFAC)
 
 test_check("SPAFAC")

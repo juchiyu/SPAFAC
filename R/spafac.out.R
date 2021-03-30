@@ -1,19 +1,15 @@
 spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, compact = FALSE) {
-  if ( is.vector(LW) ){
+  if ( is.matrix(LW) ){
     LW <- diag(LW)
-    rownames(LW) <- colnames(LW) <- colnames(X)
   }
-  if ( is.vector(RW) ){
+  if ( is.matrix(RW) ){
     RW <- diag(RW)
-    rownames(RW) <- colnames(RW) <- colnames(Y)
   }
-  if ( is.vector(LM) ){
+  if ( is.matrix(LM) ){
     LM <- diag(LM)
-    rownames(LM) <- colnames(LM) <- rownames(X)
   }
-  if ( is.vector(RM) ){
+  if ( is.matrix(RM) ){
     RM <- diag(RM)
-    rownames(RM) <- colnames(RM) <- rownames(Y)
   }
   out <- list()
   if(is_sSVD(res)) {
@@ -36,8 +32,8 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     out$gsvd$RW <- RW
     out$fi <- res$fi # t(t(LW %*% res$p) * res$d)
     out$fj <- res$fj
-    out$ci <- LW %*% (res$p)^2
-    out$cj <- RW %*% (res$q)^2
+    out$ci <- LW * (res$p)^2
+    out$cj <- RW * (res$q)^2
   }
 
   if(is_sPLS(res)) {
@@ -48,10 +44,11 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     if(is_sGSVD(res)){
       out$gsvd$LM <- LM
       out$gsvd$RM <- RM
-      out$lx <- sqrt_psd_matrix(LM) %*% X  %*% out$gsvd$LW %*% res$p
-      out$ly <- sqrt_psd_matrix(RM) %*% Y  %*% out$gsvd$RW %*% res$q
-      out$lx.noMx <- X %*% out$gsvd$LW %*% res$p # this is from the paper
-      out$ly.noMy <- Y %*% out$gsvd$RW %*% res$q
+      out$lx <- (t(t(X) * LW) * sqrt(LM)) %*% res$p # sqrt_psd_matrix(LM) %*% X  %*% out$gsvd$LW %*% res$p
+      out$ly <- (t(t(Y) * RW) * sqrt(RM)) %*% res$q # sqrt_psd_matrix(RM) %*% Y  %*% out$gsvd$RW %*% res$q
+      # the next two are from the paper
+      out$lx.noMx <- t(t(X) * LW) %*% res$p # X %*% out$gsvd$LW %*% res$p
+      out$ly.noMy <- t(t(Y) * RW) %*% res$q # Y %*% out$gsvd$RW %*% res$q
       out$sx <- out$gsvd$LW %*% out$gsvd$p
       out$sy <- out$gsvd$RW %*% out$gsvd$q
     }
@@ -61,6 +58,7 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     rownames(out$ly) <- rownames(Y)
     rownames(out$lx.noMx) <- rownames(X)
     rownames(out$ly.noMy) <- rownames(Y)
+
   }
 
   return(out)
