@@ -56,12 +56,16 @@ data("snps.druguse", package = "GSVD")
 X <- make_data_disjunctive(snps.druguse$DATA1)
 Y <- make_data_disjunctive(snps.druguse$DATA2)
 
+# get grping vector
+var.grp.X <- sub("\\..*", "", colnames(X))
+var.grp.Y <- sub("\\..*", "", colnames(Y))
+
 # run PLSCA
 plscacor_results <- plsca_cor(X, Y, components = 3)
 # run sPLSCA
-splsca.res.ls <- sparsePLSCA(X, Y, orthogonality = "both", components = 3L, rdsLeft = rep(sqrt(6), 3), rdsRight = rep(sqrt(6), 3))
-splsca.res.l <- sparsePLSCA(X, Y, orthogonality = "loadings", components = 3L, rdsLeft = rep(sqrt(6), 3), rdsRight = rep(sqrt(6), 3))
-splsca.res.s <- sparsePLSCA(X, Y, orthogonality = "scores", components = 3L, rdsLeft = rep(sqrt(6), 3), rdsRight = rep(sqrt(6), 3))
+splsca.res.ls <- sparsePLSCA(X, Y, orthogonality = "both", components = 3L, rdsLeft = rep(sqrt(6), 3), rdsRight = rep(sqrt(6), 3), grpLeft = var.grp.X, grpRight = var.grp.Y)
+splsca.res.l <- sparsePLSCA(X, Y, orthogonality = "loadings", components = 3L, rdsLeft = rep(sqrt(6), 3), rdsRight = rep(sqrt(6), 3), grpLeft = var.grp.X, grpRight = var.grp.Y)
+splsca.res.s <- sparsePLSCA(X, Y, orthogonality = "scores", components = 3L, rdsLeft = rep(sqrt(6), 3), rdsRight = rep(sqrt(6), 3), grpLeft = var.grp.X, grpRight = var.grp.Y)
 
 rownames(plscacor_results$lx) <- rownames(splsca.res.ls$lx)
 rownames(plscacor_results$ly) <- rownames(splsca.res.ls$ly)
