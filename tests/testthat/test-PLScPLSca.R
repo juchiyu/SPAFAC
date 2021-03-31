@@ -82,6 +82,8 @@ test_that("sparsePLSCA with no sparsifiaction gives back plain PLSCA (orthogonal
   expect_equal(abs(splsca.res.ls$fj), abs(plscacor_results$fj), tolerance = tol)
   expect_equal(abs(splsca.res.ls$lx), abs(plscacor_results$lx), tolerance = tol)
   expect_equal(abs(splsca.res.ls$ly), abs(plscacor_results$ly), tolerance = tol)
+  expect_equal(length(unique(diag(cor(splsca.res.ls$lx, splsca.res.ls$lx.noMx)))), 1)
+  expect_equal(length(unique(diag(cor(splsca.res.ls$ly, splsca.res.ls$ly.noMy)))), 1)
 })
 
 test_that("sparsePLSCA with no sparsifiaction gives back plain PLSCA (orthogonality = loadings)", {
@@ -95,6 +97,8 @@ test_that("sparsePLSCA with no sparsifiaction gives back plain PLSCA (orthogonal
   expect_equal(abs(splsca.res.l$fj), abs(plscacor_results$fj), tolerance = tol)
   expect_equal(abs(splsca.res.l$lx), abs(plscacor_results$lx), tolerance = tol)
   expect_equal(abs(splsca.res.l$ly), abs(plscacor_results$ly), tolerance = tol)
+  expect_equal(length(unique(diag(cor(splsca.res.l$lx, splsca.res.l$lx.noMx)))), 1)
+  expect_equal(length(unique(diag(cor(splsca.res.l$ly, splsca.res.l$ly.noMy)))), 1)
 })
 
 test_that("sparsePLSCA with no sparsifiaction gives back plain PLSCA (orthogonality = scores)", {
@@ -108,4 +112,6 @@ test_that("sparsePLSCA with no sparsifiaction gives back plain PLSCA (orthogonal
   expect_equal(abs(splsca.res.s$fj), abs(plscacor_results$fj), tolerance = tol)
   expect_equal(abs(splsca.res.s$lx), abs(plscacor_results$lx), tolerance = tol)
   expect_equal(abs(splsca.res.s$ly), abs(plscacor_results$ly), tolerance = tol)
+  expect_equal(length(unique(diag(cor(splsca.res.s$lx, splsca.res.s$lx.noMx)))), 1)
+  expect_equal(length(unique(diag(cor(splsca.res.s$ly, splsca.res.s$ly.noMy)))), 1)
 })

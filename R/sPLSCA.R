@@ -29,7 +29,7 @@
 #'
 #' @examples
 
-sparsePLSCA <- function(X, Y, components = 2L, tol = .Machine$double.eps,
+sparsePLSCA <- function(X, Y, Mx = NULL, My = NULL, Wx = NULL, Wy = NULL, components = 2L, tol = .Machine$double.eps,
                         doublecentering_X = TRUE, doublecentering_Y = TRUE,
                         init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
                         rdsLeft = rep(1, components), rdsRight = rep(1, components),
@@ -66,10 +66,18 @@ sparsePLSCA <- function(X, Y, components = 2L, tol = .Machine$double.eps,
     Y4gsvd <- Y_ca_preproc$O
   }
 
-  Mx <- diag((X_ca_preproc$m)^-1)
-  Wx <- diag((X_ca_preproc$w)^-1)
-  My <- diag((Y_ca_preproc$m)^-1)
-  Wy <- diag((Y_ca_preproc$w)^-1)
+  if (is.null(Mx)){
+    Mx <- diag((X_ca_preproc$m)^-1)
+  }
+  if (is.null(Wx)){
+    Wx <- diag((X_ca_preproc$w)^-1)
+  }
+  if (is.null(My)){
+    My <- diag((Y_ca_preproc$m)^-1)
+  }
+  if (is.null(Wy)){
+    Wy <- diag((Y_ca_preproc$w)^-1)
+  }
 
   sGSVD.res <- sparseGSVD(X = X4gsvd, Y = Y4gsvd, LW = Wx, RW = Wy, LM = Mx, RM = My,
                           k = components,
