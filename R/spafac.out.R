@@ -26,6 +26,9 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     out$fj <- res$fj
     out$ci <- res$fi^2
     out$cj <- res$fj^2
+    out$sparsity$rdsLeft <- res$rdsLeft
+    out$sparsity$rdsRight <- res$rdsRight
+    out$sparsity$SI <- res$SI
   }
 
   if(is_sGSVD(res)) {
