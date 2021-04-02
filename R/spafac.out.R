@@ -1,15 +1,19 @@
 spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, compact = FALSE) {
   if ( is.matrix(LW) ){
     LW <- diag(LW)
+    warning("Only the diagnonal of the LW matrix is used.")
   }
   if ( is.matrix(RW) ){
     RW <- diag(RW)
+    warning("Only the diagnonal of the RW matrix is used.")
   }
   if ( is.matrix(LM) ){
     LM <- diag(LM)
+    warning("Only the diagnonal of the LM matrix is used.")
   }
   if ( is.matrix(RM) ){
     RM <- diag(RM)
+    warning("Only the diagnonal of the RM matrix is used.")
   }
   out <- list()
   if(is_sSVD(res)) {
