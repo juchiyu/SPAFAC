@@ -4,6 +4,8 @@
 #' @param design the design vector of the observations (i.e., the rows) of DATA
 #' @param k the number of dimensions
 #' @param tol
+#' @param make_data_nominal (TRUE or FALSE)
+#' @param make_design_nominal
 #' @param doublecentering
 #' @param init
 #' @param initLeft
@@ -44,9 +46,9 @@ sparseDiCA <- function(
   epsALS = 1e-10, epsPOCS = 1e-10) {
 
   if (make_data_nominal){
-    DATA.disj <- tab_disjonctif(DATA)
+    DATA.disj <- tab_disjonctif(as.matrix(DATA))
   }else{
-    DATA.disj <- DATA
+    DATA.disj <- as.matrix(DATA)
   }
 
   if (make_design_nominal){
