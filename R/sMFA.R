@@ -33,12 +33,12 @@
 
 sparseMFA <- function(X, column.design, components = 0,
                       sparseOption = "variable",
-                       center = TRUE, mfa.scale = TRUE,
+                       center = TRUE, scale = TRUE, mfa.scale = TRUE,
                        tol = .Machine$double.eps,
                        init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
                        rdsLeft = rep(1, components), rdsRight = rep(1, components),
                        grpLeft = NULL,
-                       orthogonality = "both",
+                       orthogonality = "loadings",
                        OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
                        projPriority = "orth",
                        projPriorityLeft = projPriority,
@@ -59,7 +59,7 @@ sparseMFA <- function(X, column.design, components = 0,
     count.col <- table(column.design)
     ncol.tab <- c(0, count.col)
     tab.idx <- matrix(nrow = 2, ncol = length(count.col), dimnames = list(c("from", "to"), names(count.col)))
-    tab.d <- vector(length = count.col)
+    tab.d <- vector(length = length(count.col))
     to_total = 0
     from_total = 1
     for (i in 1:length(count.col)) {
@@ -68,7 +68,7 @@ sparseMFA <- function(X, column.design, components = 0,
       to_total = to
       from_total = from
       tab.d[i] <- svd(data[, from:to])$d[1] # normalize the center-and-scaled tables
-      alpha[from:to] <- 1/tab.d[i]^2
+      alpha.vec[from:to] <- 1/tab.d[i]^2
       tab.idx[,i] <- c(from, to)
     }
   }else{
@@ -79,7 +79,7 @@ sparseMFA <- function(X, column.design, components = 0,
   if (sparseOption == "variable"){
     grpRight = NULL
   }else if (sparseOption == "subtable"){
-    grpRight = col.design
+    grpRight = column.design
   }
 
   LW <- rep(1/nrow(data), nrow(data))
