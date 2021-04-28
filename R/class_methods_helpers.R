@@ -57,3 +57,18 @@ is_sGSVD <- function(x){
 is_sPLS <- function(x){
   inherits(x, "sPLS")
 }
+
+#' is_multitab
+#'
+#' Tests if the \code{x} object is of class type "MultiTab"
+#' @details The three primary functions in the \code{sGSVD} package produce an inherited (hierarchical) class structure where all of them are of type "spls". Those functions are \code{\link{sparsePLSC}} and \code{\link{sparsePLSCA}}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class sGSVD, FALSE otherwise.
+#'
+#' @seealso \code{\link{inherits}}
+#'
+#' @export
+is_multitab <- function(x){
+  inherits(x, "MultiTab")
+}

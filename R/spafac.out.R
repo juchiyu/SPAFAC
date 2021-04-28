@@ -1,4 +1,4 @@
-spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, compact = FALSE) {
+spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, tab.idx = NULL, compact = FALSE) {
   if ( is.matrix(LW) ){
     LW <- diag(LW)
     warning("Only the diagnonal of the LW matrix is used.")
@@ -65,6 +65,14 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     # rownames(out$sy) <- colnames(Y)
     # rownames(out$lx) <- rownames(X)
     # rownames(out$ly) <- rownames(Y)
+  }
+
+  if (is_multitab(res)){
+    n.tab <- ncol(tab.idx)
+    out$fii <- array(dim = c(dim(sGSVD.res$fi), n.tab))
+    for (i in 1:n.tab){
+      out$fii[,,i] <- n.tab * RW[i] * X[,tab.idx[1,i]:tab.idx[2,i]] %*% sGSVD.res$q[tab.idx[1,i]:tab.idx[2,i],]
+    }
   }
 
   return(out)
