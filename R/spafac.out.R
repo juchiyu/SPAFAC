@@ -1,4 +1,4 @@
-spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, tab.idx = NULL, compact = FALSE) {
+spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, tab.idx = NULL, compact = FALSE, X4disc = NULL) {
   if ( is.matrix(LW) ){
     LW <- diag(LW)
     warning("Only the diagnonal of the LW matrix is used.")
@@ -65,6 +65,40 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     # rownames(out$sy) <- colnames(Y)
     # rownames(out$lx) <- rownames(X)
     # rownames(out$ly) <- rownames(Y)
+  }
+
+  if (is_discriminant(res)){ # so far, this only works for sDiCA
+    ## get linear projector that transforms the columns
+    InMat <- X4disc$X.disj.grp
+    OutMat <- res$p %*% diag(res$d) %*% t(res$q)
+    col.projector <- corpcor::pseudoinverse(t(InMat) %*% InMat) %*% t(InMat) %*% OutMat
+    if (sum(OutMat - (InMat %*% col.projector)) > 1e-10 ){
+      warning("There is no good linear approximate of the projector.")
+    }
+
+    ## profiles and row masses
+    i.sup.prof <- X4disc$X.disj/rowSums(X4disc$X.disj)
+    Dr_14fii <- diag(LW[X4disc$design])
+
+    ## supplementary projections
+    out$fii.unscale <- Dr_14fii %*% X4disc$X.disj %*% col.projector %*% diag(RW) %*% res$q
+    n2scale <- colSums(X4disc$design.disj)[X4disc$design]
+    out$fii <- out$fii.unscale * n2scale
+
+    ## compute distance to the means
+    dist2fi <- matrix(NA, nrow(out$fii), nrow(out$fi), dimnames = list(c(), rownames(out$fi)))
+    for (i in 1:nrow(out$fi)){
+      dist2fi[,i] <- sqrt(rowSums(t(t(out$fii)-out$fi[i,])^2))
+    }
+    min.idx <- apply(dist2fi, 1, which.min)
+    assignment <- colnames(dist2fi)[min.idx]
+
+    ## print classification results
+    truth <- X4disc$design
+    predict <- assignment
+    out$classification$table <- table(truth, predict)
+    out$classification$acc <- sum(diag(out$classification$table))/sum(out$classification$table)
+    out$classification$acc.per.group <- diag(out$classification$table)/rowSums(out$classification$table)
   }
 
   if (is_multitab(res)){

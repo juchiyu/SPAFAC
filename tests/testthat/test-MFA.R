@@ -1,5 +1,7 @@
 library(mpMFA)
 
+FactoMineR::
+
 data('wines2007')
 demo.mfa.2007 <- mpMFA(wines2007$data, wines2007$table, graphs = FALSE)
 

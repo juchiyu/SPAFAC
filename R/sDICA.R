@@ -56,6 +56,7 @@ sparseDiCA <- function(
     colnames(design.disj) <- sub("^.*\\.", "", colnames(design.disj))
   }else{
     design.disj <- design
+    design <- colnames(design.disj)[apply(design.disj, 1, function(x)which(x>0))]
   }
     DATA.in <- t(design.disj) %*% DATA.disj
 
@@ -80,8 +81,8 @@ sparseDiCA <- function(
                           itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
                           epsALS = epsALS, epsPOCS = epsPOCS)
 
-  class(sGSVD.res) <- c("sSVD", "sGSVD", "list")
-  res <- spafac.out(sGSVD.res, X = DATA, LW = LW, RW = RW)
+  class(sGSVD.res) <- c("sSVD", "sGSVD", "discriminant", "list")
+  res <- spafac.out(sGSVD.res, X = X, LW = LW, RW = RW, X4disc = list(design = design, design.disj = design.disj, X.disj = DATA.disj, X.disj.grp = DATA.in))
   res$data$X.disj <- DATA.disj
   res$data$X.preproc <- X
 

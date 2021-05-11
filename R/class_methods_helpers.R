@@ -58,6 +58,21 @@ is_sPLS <- function(x){
   inherits(x, "sPLS")
 }
 
+#' is_discriminant
+#'
+#' Tests if the \code{x} object is of class type "discriminant"
+#' @details The functions in the \code{sGSVD} package that perform discriminant analysis. The function is \code{\link{sparseDiCA}}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class discriminant, FALSE otherwise.
+#'
+#' @seealso \code{\link{inherits}}
+#'
+#' @export
+is_discriminant <- function(x){
+  inherits(x, "discriminant")
+}
+
 #' is_multitab
 #'
 #' Tests if the \code{x} object is of class type "MultiTab"
