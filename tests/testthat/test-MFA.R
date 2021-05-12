@@ -30,11 +30,11 @@ smfa.res <- sparseMFA(X = as.matrix(data.mfa), column.design = as.matrix(col.des
 ## check results ----
 facto.res$eig[,1]/smfa.res$eig # off by # of rows
 facto.res$ind$coord/smfa.res$fi # off by 1/sqrt(LW)
-apply(smfa.res$fii, c(1,2), mean)/smfa.res$fi
+apply(smfa.res$partial.fi, c(1,2), mean)/smfa.res$fi
 
 ## test ----
 test_that("sparseMFA with no sparsification gives back plain MFA", {
   expect_equivalent(abs(facto.res$eig[,1]), abs(smfa.res$eig*nrow(data.mfa)), tolerance = tol)
   expect_equivalent(abs(facto.res$ind$coord), abs(smfa.res$fi*(1/sqrt(smfa.res$gsvd$LW))), tolerance = tol)
-  expect_equivalent(apply(smfa.res$fii, c(1,2), mean), smfa.res$fi)
+  expect_equivalent(apply(smfa.res$partial.fi, c(1,2), mean), smfa.res$fi)
 })

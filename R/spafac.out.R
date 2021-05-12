@@ -110,9 +110,9 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
 
   if (is_multitab(res)){
     n.tab <- ncol(tab.idx)
-    out$fii <- array(dim = c(dim(res$fi), n.tab))
+    out$partial.fi <- array(dim = c(dim(res$fi), n.tab))
     for (i in 1:n.tab){
-      out$fii[,,i] <- n.tab * RW[tab.idx[1,i]] * X[,tab.idx[1,i]:tab.idx[2,i]] %*% res$q[tab.idx[1,i]:tab.idx[2,i],]
+      out$partial.fi[,,i] <- n.tab * RW[tab.idx[1,i]] * X[,tab.idx[1,i]:tab.idx[2,i]] %*% res$q[tab.idx[1,i]:tab.idx[2,i],]
     }
   }
 
