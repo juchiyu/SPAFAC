@@ -43,6 +43,13 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     out$cj <- RW * (res$q)^2
   }
 
+  if(is_sGPCA(res)) {
+    out$fi <- t(t(res$p) * res$d)
+    out$fj <- t(t(res$q) * res$d)
+    out$ci <- LW * (out$fi)^2
+    out$cj <- RW * (res$q)^2
+  }
+
   if(is_sPLS(res)) {
     out$lx <- X %*% res$U
     out$ly <- Y %*% res$V
@@ -103,9 +110,9 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
 
   if (is_multitab(res)){
     n.tab <- ncol(tab.idx)
-    out$fii <- array(dim = c(dim(sGSVD.res$fi), n.tab))
+    out$fii <- array(dim = c(dim(res$fi), n.tab))
     for (i in 1:n.tab){
-      out$fii[,,i] <- n.tab * RW[i] * X[,tab.idx[1,i]:tab.idx[2,i]] %*% sGSVD.res$q[tab.idx[1,i]:tab.idx[2,i],]
+      out$fii[,,i] <- n.tab * RW[tab.idx[1,i]] * X[,tab.idx[1,i]:tab.idx[2,i]] %*% res$q[tab.idx[1,i]:tab.idx[2,i],]
     }
   }
 

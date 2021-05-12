@@ -50,15 +50,20 @@ sparseMFA <- function(X, column.design, components = 0,
     X <- as.matrix(X,rownames.force = TRUE)
   }
 
-  ### We should use the GSVD instead of the weighted PCA !!!
+  if (scale == "ss1"){
+    data <- projL2(scale(X, center = center, scale = FALSE))$x  # center and scale to ss = 1 before MFA-normalization
+  }else{
+    data <- scale(X, center = center, scale = scale) # center and scale before MFA-normalization
+  }
 
-  data <- scale(X, center = center, scale = scale) # center and scale before MFA-normalization
+
 
   if (mfa.scale){
     alpha.vec <- vector(length = length(column.design))
     count.col <- table(column.design)
     ncol.tab <- c(0, count.col)
     tab.idx <- matrix(nrow = 2, ncol = length(count.col), dimnames = list(c("from", "to"), names(count.col)))
+    tab.svd <- list()
     tab.d <- vector(length = length(count.col))
     to_total = 0
     from_total = 1
@@ -67,7 +72,8 @@ sparseMFA <- function(X, column.design, components = 0,
       to =  ncol.tab[i+1] + to_total
       to_total = to
       from_total = from
-      tab.d[i] <- svd(data[, from:to])$d[1] # normalize the center-and-scaled tables
+      tab.svd[[i]] <- svd(data[, from:to])
+      tab.d[i] <- tab.svd[[i]]$d[1] # normalize the center-and-scaled tables
       alpha.vec[from:to] <- 1/tab.d[i]^2
       tab.idx[,i] <- c(from, to)
     }
@@ -97,11 +103,12 @@ sparseMFA <- function(X, column.design, components = 0,
                          itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
                          epsALS = epsALS, epsPOCS = epsPOCS)
 
-  class(sGSVD.res) <- c("sSVD", "MultiTab", "list")
+  class(sGSVD.res) <- c("sSVD", "sGSVD", "sGPCA", "MultiTab", "list")
 
   res <- spafac.out(sGSVD.res, X = data, LW = LW, RW = RW, tab.idx = tab.idx)
   res$X.preproc <- X
   res$alpha <- RW
+  res$table.svd <- tab.svd
   res$table.d <- tab.d
 
   return(res)

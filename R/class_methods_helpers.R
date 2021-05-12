@@ -43,6 +43,21 @@ is_sGSVD <- function(x){
   inherits(x, "sGSVD")
 }
 
+#' is_sGPCA
+#'
+#' Tests if the \code{x} object is of class type "sGPCA"
+#' @details The three primary functions in the \code{sGPCA} package produce an inherited (hierarchical) class structure where all of them are of type "sGPCA". The function is \code{\link{sparseMFA}}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class sPCA, FALSE otherwise.
+#'
+#' @seealso \code{\link{inherits}}
+#'
+#' @export
+is_sGPCA <- function(x){
+  inherits(x, "sGPCA")
+}
+
 #' is_spls
 #'
 #' Tests if the \code{x} object is of class type "sGSVD"

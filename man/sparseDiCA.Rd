@@ -37,6 +37,8 @@ sparseDiCA(
 
 \item{design}{the design vector of the observations (i.e., the rows) of DATA}
 
+\item{make_data_nominal}{(TRUE or FALSE)}
+
 \item{grpLeft}{the grouping vector for the rows}
 
 \item{grpRight}{the grouping vector for the columns}
