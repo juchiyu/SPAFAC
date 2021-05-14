@@ -9,7 +9,7 @@ library(testthat)
 #   "https://github.com/juchiyu/SPAFAC.git",
 #   credentials = git2r::cred_user_pass("juchiyu", getPass::getPass())
 # )
-#
+
 library(SPAFAC)
 
 test_check("SPAFAC")

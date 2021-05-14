@@ -3,7 +3,7 @@
 #' @param X Data matrix with \emph{I} rows and \emph{J} columns
 #' @param column.design
 #' @param components the number of dimensions to extract
-#' @param sparseOption "variable" or "subtable
+#' @param sparseOption "variable" or "subtable"
 #' @param center For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
 #' @param scale For the \code{X} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
 #' @param tol default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).
@@ -105,7 +105,7 @@ sparseMFA <- function(X, column.design, components = 0,
 
   class(sGSVD.res) <- c("sSVD", "sGSVD", "sGPCA", "MultiTab", "list")
 
-  res <- spafac.out(sGSVD.res, X = data, LW = LW, RW = RW, tab.idx = tab.idx)
+  res <- spafac.out(sGSVD.res, X = data, LW = LW, RW = RW, tab.idx = tab.idx, column.design = column.design)
   res$X.preproc <- X
   res$alpha <- RW
   res$table.svd <- tab.svd

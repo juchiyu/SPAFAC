@@ -1,4 +1,4 @@
-spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, tab.idx = NULL, compact = FALSE, X4disc = NULL) {
+spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, tab.idx = NULL, column.design = NULL, compact = FALSE, X4disc = NULL) {
   if ( is.matrix(LW) ){
     LW <- diag(LW)
     warning("Only the diagnonal of the LW matrix is used.")
@@ -24,8 +24,8 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     out$eig <- res$d^2
     out$fi <- res$fi # t(t(res$U) * res$d)
     out$fj <- res$fj
-    out$ci <- res$fi^2
-    out$cj <- res$fj^2
+    out$ci <- res$U^2
+    out$cj <- res$V^2
     out$sparsity$rdsLeft <- res$rdsLeft
     out$sparsity$rdsRight <- res$rdsRight
     out$sparsity$SI <- res$SI
@@ -46,8 +46,7 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
   if(is_sGPCA(res)) {
     out$fi <- t(t(res$p) * res$d)
     out$fj <- t(t(res$q) * res$d)
-    out$ci <- LW * (out$fi)^2
-    out$cj <- RW * (res$q)^2
+    out$ct <- apply(out$cj, 2, function(x) tapply(x, column.design, FUN = sum))
   }
 
   if(is_sPLS(res)) {
