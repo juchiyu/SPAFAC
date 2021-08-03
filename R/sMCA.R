@@ -68,6 +68,7 @@ sparseMCA <- function(
 
   class(sGSVD.res) <- c("sSVD", "sGSVD", "list")
   res <- spafac.out(sGSVD.res, X = DATA, LW = LW, RW = RW)
+  # ADD CORRECTION FOR EIGENVALUES
   res$data$X.disj <- DATA.disj
   res$data$X.preproc <- X
 
