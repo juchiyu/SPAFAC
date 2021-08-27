@@ -40,7 +40,7 @@ sparseMFA(
 
 \item{components}{the number of dimensions to extract}
 
-\item{sparseOption}{"variable" or "subtable}
+\item{sparseOption}{"variable" or "subtable"}
 
 \item{center}{For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.}
 
