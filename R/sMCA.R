@@ -38,6 +38,7 @@ sparseMCA <- function(
   projPriority = "orth",
   projPriorityLeft = projPriority,
   projPriorityRight = projPriority,
+  correction4SI = "mca",
   itermaxALS = 1000, itermaxPOCS = 1000,
   epsALS = 1e-10, epsPOCS = 1e-10) {
 
@@ -62,7 +63,7 @@ sparseMCA <- function(
                           projPriority = projPriority,
                           projPriorityLeft = projPriorityLeft,
                           projPriorityRight = projPriorityRight,
-                          correction4SI = "mca",
+                          correction4SI = correction4SI,
                           itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
                           epsALS = epsALS, epsPOCS = epsPOCS)
 
