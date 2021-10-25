@@ -2,7 +2,6 @@
 #'
 #' @param DATA the contingency table
 #' @param design the design vector of the observations (i.e., the rows) of DATA
-#' @param k the number of dimensions
 #' @param tol
 #' @param make_data_nominal (TRUE or FALSE)
 #' @param make_design_nominal
@@ -25,13 +24,15 @@
 #' @param itermaxPOCS
 #' @param epsALS
 #' @param epsPOCS
+#' @param ca.type
+#' @param components
 #'
 #' @return
 #' @export
 #'
 #' @examples
 sparseDiCA <- function(
-  DATA, design, components = 0, tol = .Machine$double.eps,
+  DATA, design, ca.type = "mca", components = 0, tol = .Machine$double.eps,
   make_data_nominal = TRUE, make_design_nominal = TRUE,
   doublecentering = TRUE,
   init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
@@ -45,46 +46,45 @@ sparseDiCA <- function(
   itermaxALS = 1000, itermaxPOCS = 1000,
   epsALS = 1e-10, epsPOCS = 1e-10) {
 
-  if (make_data_nominal){
-    DATA.disj <- tab_disjonctif(as.matrix(DATA))
+  if (ca.type == "mca"){
+    warning("ca.type is set to `mca` and you're running DiMCA.")
+
+    res <- sparseDiMCA(
+      DATA = X, design = design, components = components, tol = tol,
+      make_data_nominal = make_data_nominal, make_design_nominal = make_design_nominal,
+      doublecentering = doublecentering,
+      init = init, initLeft = initLeft, initRight = initRight, seed = seed,
+      rdsLeft = rdsLeft, rdsRight = rdsRight,
+      grpLeft = grpLeft, grpRight = grpRight,
+      orthogonality = orthogonality,
+      OrthSpaceLeft = OrthSpaceLeft, OrthSpaceRight = OrthSpaceRight,
+      projPriority = projPriority,
+      projPriorityLeft = projPriorityLeft,
+      projPriorityRight = projPriorityRight,
+      itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
+      epsALS = epsALS, epsPOCS = epsPOCS)
+
+  }else if (ca.type == "sca"){
+    warning("ca.type is set to `ca` and you're running DiSCA.")
+
+    res <- sparseDiSCA(
+      DATA = X, design = design, components = components, tol = tol,
+      make_design_nominal = make_design_nominal,
+      doublecentering = doublecentering,
+      init = init, initLeft = initLeft, initRight = initRight, seed = seed,
+      rdsLeft = rdsLeft, rdsRight = rdsRight,
+      grpLeft = grpLeft, grpRight = grpRight,
+      orthogonality = orthogonality,
+      OrthSpaceLeft = OrthSpaceLeft, OrthSpaceRight = OrthSpaceRight,
+      projPriority = projPriority,
+      projPriorityLeft = projPriorityLeft,
+      projPriorityRight = projPriorityRight,
+      itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
+      epsALS = epsALS, epsPOCS = epsPOCS)
+
   }else{
-    DATA.disj <- as.matrix(DATA)
+    stop("You need to specify ca.type by choosing between `mca`(default) and `ca`.")
   }
-
-  if (make_design_nominal){
-    design.disj <- tab_disjonctif(design)
-    colnames(design.disj) <- sub("^.*\\.", "", colnames(design.disj))
-  }else{
-    design.disj <- design
-    design <- colnames(design.disj)[apply(design.disj, 1, function(x)which(x>0))]
-  }
-    DATA.in <- t(design.disj) %*% DATA.disj
-
-  N <- sum(DATA.in)
-  X <- 1/N * DATA.in
-  Lv <- rowSums(X)
-  Rv <- colSums(X)
-  if (doublecentering) X <- X - Lv %*% t(Rv)
-  LW <- 1/Lv
-  RW <- 1/Rv
-
-  sGSVD.res <- sparseGSVD(X, LW = LW, RW = RW, k = components, tol = .Machine$double.eps,
-                          init = init, initLeft = initLeft, initRight = initRight, seed = NULL,
-                          rdsLeft = rdsLeft, rdsRight = rdsRight,
-                          grpLeft = grpLeft, grpRight = grpRight,
-                          orthogonality = orthogonality,
-                          OrthSpaceLeft = OrthSpaceLeft,
-                          OrthSpaceRight = OrthSpaceRight,
-                          projPriority = projPriority,
-                          projPriorityLeft = projPriorityLeft,
-                          projPriorityRight = projPriorityRight,
-                          itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
-                          epsALS = epsALS, epsPOCS = epsPOCS)
-
-  class(sGSVD.res) <- c("sSVD", "sGSVD", "discriminant", "list")
-  res <- spafac.out(sGSVD.res, X = X, LW = LW, RW = RW, X4disc = list(design = design, design.disj = design.disj, X.disj = DATA.disj, X.disj.grp = DATA.in))
-  res$data$X.disj <- DATA.disj
-  res$data$X.preproc <- X
 
   return(res)
 
