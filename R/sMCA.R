@@ -1,7 +1,6 @@
 #' Group sparse Multiple Correspondence Analysis
 #'
 #' @param DATA the contingency table
-#' @param k the number of dimensions
 #' @param tol
 #' @param doublecentering
 #' @param init
@@ -22,6 +21,9 @@
 #' @param itermaxPOCS
 #' @param epsALS
 #' @param epsPOCS
+#' @param components
+#' @param make_data_nominal
+#' @param correction4SI
 #'
 #' @return
 #' @export
@@ -29,7 +31,7 @@
 #' @examples
 sparseMCA <- function(
   DATA, components = 0, tol = .Machine$double.eps,
-  doublecentering = TRUE,
+  make_data_nominal = TRUE, doublecentering = TRUE,
   init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
   rdsLeft = rep(1, components), rdsRight = rep(1, components),
   grpLeft = NULL, grpRight = NULL,
@@ -42,8 +44,25 @@ sparseMCA <- function(
   itermaxALS = 1000, itermaxPOCS = 1000,
   epsALS = 1e-10, epsPOCS = 1e-10) {
 
-  DATA.disj <- tab_disjonctif(DATA)
-  rownames(DATA.disj) <- rownames(DATA)
+  # add make_data_nominal
+  if (make_data_nominal){
+    DATA.disj <- tab_disjonctif(as.matrix(DATA))
+    rownames(DATA.disj) <- rownames(DATA)
+    if (is.null(grpRight)){
+      # create grpRight
+      grpRight <- sub("\\..+","", colnames(DATA.disj))
+    }else{
+      # check that group size is in the correct format
+      if (length(grpRight) != ncol(DATA.disj)) stop("The length of grpRight doesn't match the data. Check your grpRight!")
+    }
+  }else{
+    DATA.disj <- as.matrix(DATA)
+    if (is.null(grpRight)){
+      stop("Please specify grpRight when the input data is in disjunctive code.")
+    }else{
+      if (length(grpRight) != ncol(DATA.disj)) stop("The length of grpRight doesn't match the data. Check your grpRight!")
+    }
+  }
 
   N <- sum(DATA.disj)
   X <- 1/N * DATA.disj

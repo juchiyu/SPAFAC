@@ -44,8 +44,21 @@ sparseDiMCA <- function(
 
   if (make_data_nominal){
     DATA.disj <- tab_disjonctif(as.matrix(DATA))
+    rownames(DATA.disj) <- rownames(DATA)
+    if (is.null(grpRight)){
+      # create grpRight
+      grpRight <- sub("\\..+","", colnames(DATA.disj))
+    }else{
+      # check that group size is in the correct format
+      if (length(grpRight) != ncol(DATA.disj)) stop("The length of grpRight doesn't match the data. Check your grpRight!")
+    }
   }else{
     DATA.disj <- as.matrix(DATA)
+    if (is.null(grpRight)){
+      stop("Please specify grpRight when the input data is in disjunctive code.")
+    }else{
+      if (length(grpRight) != ncol(DATA.disj)) stop("The length of grpRight doesn't match the data. Check your grpRight!")
+    }
   }
 
   if (make_design_nominal){
