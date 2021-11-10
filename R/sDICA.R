@@ -47,7 +47,7 @@ sparseDiCA <- function(
   epsALS = 1e-10, epsPOCS = 1e-10) {
 
   if (ca.type == "mca"){
-    message("ca.type is set to `mca` and you're running DiMCA.")
+    message(crayon::cyan("ca.type is set to `mca` and you're running DiMCA."))
 
     res <- sparseDiMCA(
       DATA = DATA, design = design, components = components, tol = tol,
@@ -65,7 +65,7 @@ sparseDiCA <- function(
       epsALS = epsALS, epsPOCS = epsPOCS)
 
   }else if (ca.type == "sca"){
-    message("ca.type is set to `ca` and you're running DiSCA.")
+    message(crayon::cyan("ca.type is set to `sca` and you're running DiSCA."))
 
     res <- sparseDiSCA(
       DATA = DATA, design = design, components = components, tol = tol,
