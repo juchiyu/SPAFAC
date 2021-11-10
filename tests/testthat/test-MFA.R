@@ -33,7 +33,7 @@ facto.res$eig[,1]/smfa.res$eig # off by # of rows
 # mexpo.res$mexPosition.Data$Table$eigs/smfa.res$eig # off by 1/(# of tables)
 facto.res$ind$coord/smfa.res$fi # off by 1/sqrt(LW)
 # mexpo.res$mexPosition.Data$Table$fi/smfa.res$fi # off by 1/sqrt(# of tables)
-facto.res$ind$coord/mexpo.res$mexPosition.Data$Table$fi # off by sqrt(# of rows * # of tables)
+# facto.res$ind$coord/mexpo.res$mexPosition.Data$Table$fi # off by sqrt(# of rows * # of tables)
 apply(smfa.res$partial.fi, c(1,2), mean)/smfa.res$fi
 
 facto.res$quanti.var$coord/smfa.res$fj # off by an unknown scaling factor
