@@ -50,7 +50,7 @@ sparseDiCA <- function(
     warning("ca.type is set to `mca` and you're running DiMCA.")
 
     res <- sparseDiMCA(
-      DATA = X, design = design, components = components, tol = tol,
+      DATA = DATA, design = design, components = components, tol = tol,
       make_data_nominal = make_data_nominal, make_design_nominal = make_design_nominal,
       doublecentering = doublecentering,
       init = init, initLeft = initLeft, initRight = initRight, seed = seed,
@@ -68,7 +68,7 @@ sparseDiCA <- function(
     warning("ca.type is set to `ca` and you're running DiSCA.")
 
     res <- sparseDiSCA(
-      DATA = X, design = design, components = components, tol = tol,
+      DATA = DATA, design = design, components = components, tol = tol,
       make_design_nominal = make_design_nominal,
       doublecentering = doublecentering,
       init = init, initLeft = initLeft, initRight = initRight, seed = seed,
