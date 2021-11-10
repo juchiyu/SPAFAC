@@ -7,6 +7,7 @@
 sparseDiCA(
   DATA,
   design,
+  ca.type = "mca",
   components = 0,
   tol = .Machine$double.eps,
   make_data_nominal = TRUE,
@@ -37,15 +38,13 @@ sparseDiCA(
 
 \item{design}{the design vector of the observations (i.e., the rows) of DATA}
 
+\item{components}{}
+
 \item{make_data_nominal}{(TRUE or FALSE)}
 
 \item{grpLeft}{the grouping vector for the rows}
 
 \item{grpRight}{the grouping vector for the columns}
-
-\item{epsPOCS}{}
-
-\item{k}{the number of dimensions}
 }
 \value{
 
