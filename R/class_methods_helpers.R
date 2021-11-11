@@ -88,6 +88,36 @@ is_discriminant <- function(x){
   inherits(x, "discriminant")
 }
 
+#' is_sca
+#'
+#' Tests if the \code{x} object is of class type "sca"
+#' @details The functions in the \code{sGSVD} package that perform discriminant simple correspondence analysis. The function is \code{\link{sparseDiSCA}}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class sca, FALSE otherwise.
+#'
+#' @seealso \code{\link{inherits}}
+#'
+#' @export
+is_sca <- function(x){
+  inherits(x, "SCA")
+}
+
+#' is_mca
+#'
+#' Tests if the \code{x} object is of class type "mca"
+#' @details The functions in the \code{sGSVD} package that perform discriminant multiple correspondence analysis. The function is \code{\link{sparseDiMCA}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class mca, FALSE otherwise.
+#'
+#' @seealso \code{\link{inherits}}
+#'
+#' @export
+is_mca <- function(x){
+  inherits(x, "MCA")
+}
+
 #' is_multitab
 #'
 #' Tests if the \code{x} object is of class type "MultiTab"

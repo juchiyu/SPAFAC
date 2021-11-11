@@ -74,6 +74,7 @@ sparseDiSCA <- function(
                           epsALS = epsALS, epsPOCS = epsPOCS)
 
   class(sGSVD.res) <- c("sSVD", "sGSVD", "SCA", "discriminant", "list")
+  DATA.disj <- DATA
   res <- spafac.out(sGSVD.res, X = X, LW = LW, RW = RW, X4disc = list(design = design, design.disj = design.disj, X.disj = DATA.disj, X.disj.grp = DATA.in))
   res$data$X.disj <- DATA.disj
   res$data$X.preproc <- X
