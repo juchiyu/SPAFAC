@@ -2,11 +2,13 @@
 
 export(is_GSVD)
 export(is_discriminant)
+export(is_mca)
 export(is_multitab)
 export(is_sGPCA)
 export(is_sGSVD)
 export(is_sPLS)
 export(is_sSVD)
+export(is_sca)
 export(sparseCA)
 export(sparseDiCA)
 export(sparseMCA)

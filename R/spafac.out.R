@@ -90,6 +90,7 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     out$fii.unscale <- Dr_14fii %*% X4disc$X.disj %*% col.projector %*% diag(RW) %*% res$q
     n2scale <- colSums(X4disc$design.disj)[X4disc$design]
     out$fii <- out$fii.unscale * n2scale
+    rownames(out$fii.unscale) <- rownames(out$fii) <- rownames(X4disc$X.disj)
 
     ## compute distance to the means
     dist2fi <- matrix(NA, nrow(out$fii), nrow(out$fi), dimnames = list(c(), rownames(out$fi)))
