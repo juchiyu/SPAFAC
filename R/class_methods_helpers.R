@@ -43,6 +43,32 @@ is_sGSVD <- function(x){
   inherits(x, "sGSVD")
 }
 
+#' is_sEIGEN
+#'
+#' Tests if the \code{x} object is of class type "sEIGEN"
+#' @details The functions in the \code{sGSVD} package that are analyzed by sparse eigendecomposition \code{sparseEIGEN}. For example, \code{sparseMDS} and \code{sparseDiSTATIS}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class sEIGEN, FALSE otherwise.
+#'
+#' @export
+is_sEIGEN<- function(x){
+  inherits(x, "sEIGEN")
+}
+
+#' is_sGEIGEN
+#'
+#' Tests if the \code{x} object is of class type "sGEIGEN"
+#' @details The functions in the \code{sGSVD} package that are analyzed by sparse generalized eigendecomposition \code{sparseGEIGEN}. For example, \code{sparseMDS} and \code{sparseDiSTATIS}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class sGEIGEN, FALSE otherwise.
+#'
+#' @export
+is_sGEIGEN<- function(x){
+  inherits(x, "sGEIGEN")
+}
+
 #' is_sGPCA
 #'
 #' Tests if the \code{x} object is of class type "sGPCA"
@@ -131,4 +157,17 @@ is_mca <- function(x){
 #' @export
 is_multitab <- function(x){
   inherits(x, "MultiTab")
+}
+
+#' is_sMDS
+#'
+#' Tests if the \code{x} object is of class type "sMDS"
+#' @details The functions in the \code{sGSVD} package that are analyzed by sparse multidimensional scaling \code{sparseMDS}.
+#'
+#' @param x object to test
+#' @return boolean. \code{TRUE} if the object is of class sMDS, FALSE otherwise.
+#'
+#' @export
+is_sMDS<- function(x){
+  inherits(x, "sMDS")
 }

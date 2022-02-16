@@ -43,6 +43,30 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
     out$cj <- RW * (res$q)^2
   }
 
+  if(is_sEIGEN(res)) {
+    out$eig$d <- res$d
+    out$eig$l <- res$l
+    out$eig$u <- res$u[,, drop = FALSE]
+    out$iter <- res$iter
+    out$f <- res$f # t(t(res$U) * res$d)
+    out$c <- res$u^2
+    out$input <- res$input
+    out$sparsity$rds <- res$rds
+    out$sparsity$SI <- res$SI
+  }
+
+  if(is_sGEIGEN(res)) {
+    out$geig$d <- res$d
+    out$geig$l <- res$l
+    out$geig$p <- res$p
+    out$geig$M <- LW
+    out$f <- res$f # t(t(res$U) * res$d)
+    out$c <- LW * (res$p)^2
+    out$input <- res$input
+    out$sparsity$rds <- res$rds
+    out$sparsity$SI <- res$SI
+  }
+
   if(is_sGPCA(res)) {
     out$fi <- t(t(res$p) * res$d)
     out$fj <- t(t(res$q) * res$d)
@@ -109,10 +133,14 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
   }
 
   if (is_multitab(res)){
-    n.tab <- ncol(tab.idx)
-    out$partial.fi <- array(dim = c(dim(res$fi), n.tab))
-    for (i in 1:n.tab){
-      out$partial.fi[,,i] <- n.tab * RW[tab.idx[1,i]] * X[,tab.idx[1,i]:tab.idx[2,i]] %*% res$q[tab.idx[1,i]:tab.idx[2,i],]
+    if (is_GSVD(res)){
+      n.tab <- ncol(tab.idx)
+      out$partial.fi <- array(dim = c(dim(res$fi), n.tab))
+      for (i in 1:n.tab){
+        out$partial.fi[,,i] <- n.tab * RW[tab.idx[1,i]] * X[,tab.idx[1,i]:tab.idx[2,i]] %*% res$q[tab.idx[1,i]:tab.idx[2,i],]
+      }
+    }else if (is_sEIGEN(res)){
+
     }
   }
 
