@@ -37,7 +37,7 @@ sparseMFA <- function(X, column.design, components = 0,
                        tol = .Machine$double.eps,
                        init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
                        rdsLeft = rep(1, components), rdsRight = rep(1, components),
-                       grpLeft = NULL,
+                       grpLeft = NULL, grpRight = NULL,
                        orthogonality = "loadings",
                        OrthSpaceLeft = NULL, OrthSpaceRight = NULL,
                        projPriority = "orth",
@@ -101,7 +101,8 @@ sparseMFA <- function(X, column.design, components = 0,
                          projPriorityLeft = projPriority,
                          projPriorityRight = projPriority,
                          itermaxALS = itermaxALS, itermaxPOCS = itermaxPOCS,
-                         epsALS = epsALS, epsPOCS = epsPOCS)
+                         epsALS = epsALS, epsPOCS = epsPOCS
+)
 
   class(sGSVD.res) <- c("sSVD", "sGSVD", "sGPCA", "MultiTab", "list")
 

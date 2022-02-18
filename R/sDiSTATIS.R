@@ -165,7 +165,7 @@ sparseDiSTATIS <- function(
     res4Splus <- sGEIG.Splus,
     res4Splus$Splus <- Splus,
     res4Splus$alpha <- alpha4Splus,
-    input <- list(components.Cmat = components.Cmat, init.Cmat = init.Cmat,
+    param <- list(components.Cmat = components.Cmat, init.Cmat = init.Cmat,
                   rds.Cmat = rds.Cmat, grp.Cmat = grp.Cmat,
                   orthogonality.Cmat = orthogonality.Cmat, OrthSpace.Cmat = OrthSpace.Cmat,
                   projPriority.Cmat = projPriority.Cmat,
