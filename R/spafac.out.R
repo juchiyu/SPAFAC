@@ -1,4 +1,4 @@
-spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, tab.idx = NULL, column.design = NULL, compact = FALSE, X4disc = NULL) {
+spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NULL, tab.idx = NULL, column.design = NULL, compact = FALSE, X4disc = NULL, masses.Cmat = NULL) {
   if ( is.matrix(LW) ){
     LW <- diag(LW)
     warning("Only the diagnonal of the LW matrix is used.")

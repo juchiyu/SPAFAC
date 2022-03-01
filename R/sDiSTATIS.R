@@ -67,21 +67,33 @@ sparseDiSTATIS <- function(
   } else {
     ## check length
     if (length(masses.Cmat) != nrow(Cmat)) {
-      stop("The length of `masses.Cmat` does not equal the number of table (i.e., the third dimension of `DATA`).")
-    }else{
+      stop("The length of `masses.Cmat` does not equal the number of tables (i.e., the third dimension of `DATA`).")
+    } else {
       masses.Cmat <- masses.Cmat
     }
   }
 
+  ### masses for the Splus matrix
+  if (is.null(masses.Splus)) {
+    masses.Splus <- rep(1, nrow(DATA))
+  } else {
+    ## check length
+    if (length(masses.Splus) != nrow(DATA)) {
+      stop("The length of `masses.Splus` does not equal the number of subjects (i.e., the frist dimension of `DATA`).")
+    }else{
+      masses.Splus <- masses.Splus
+    }
+  }
   ## eigen decomposition of RV.matrix
   sEIG.Cmat <- vector(mode = "list", length = components.Cmat)
   if (sparse.Cmat) { ## NEED SUPSPACE!!
 
     Cmat.tmp <- Cmat
+    masses.Cmat.tmp <- masses.Cmat
     nonzero.relative.ind.list <- vector("list", components.Cmat)
     for (i in 1:components.Cmat) {
       sEIG.Cmat[[i]] <- sparseGEIGEN(
-        X = Cmat.tmp, W = masses.Cmat,
+        X = Cmat.tmp, W = masses.Cmat.tmp,
         k = as.integer(components.Cmat),
        init = init.Cmat, seed = seed,
        rds = rds.Cmat[i],
@@ -95,6 +107,7 @@ sparseDiSTATIS <- function(
       nonzero.relative.ind.list[[i]] <- which(sEIG.Cmat[[i]]$u[,1] != 0)
       if (length(nonzero.relative.ind.list[[i]]) == 0) stop("Something went wrong !")
       Cmat.tmp <- Cmat.tmp[-nonzero.relative.ind.list[[i]], -nonzero.relative.ind.list[[i]]]
+      masses.Cmat.tmp <- masses.Cmat.tmp[-nonzero.relative.ind.list[[i]]]
       if (any(dim(Cmat.tmp) == 0)) stop("Something else went wrong !")
     }
     reference <- 1:nrow(Cmat)
@@ -104,13 +117,13 @@ sparseDiSTATIS <- function(
       reference <- reference[-nonzero.relative.ind.list[[i]]]
     }
     U <- matrix(0, nrow = nrow(Cmat), ncol = components.Cmat, dimnames = list(rownames(Cmat), paste0("Dim", 1:components.Cmat)))
-    U[, 1] <- sEIG.Cmat[[i]]$u[, 1]
+    U[, 1] <- sEIG.Cmat[[1]]$u[, 1]
     if (components.Cmat > 1) {
       for (i in 2:components.Cmat) {
-        U[nonzero.abs.ind.list[[i - 1]], i] <- sEIG.Cmat[[i]]
+        U[-nonzero.abs.ind.list[[i - 1]], i] <- sEIG.Cmat[[i]]$u[, 1]
       }
     }
-    values <- drop(t(U) %*% Cmat %*% U)
+    values <- diag(t(U) %*% Cmat %*% U)
     sEIG.Cmat <- list(values = values,
                       l = values,
                       vectors = U,
@@ -228,35 +241,56 @@ sparseDiSTATIS <- function(
   )
 
   class(sGEIG.res) <- c("sEIGEN", "sGEIGEN", "MultiTab", "list")
-  res <- spafac.out(sGEIG.res, X = DATA, LW = M_vec, RW = M_vec)
+  res <- spafac.out(sGEIG.res, X = DATA, masses.Cmat =  masses.Cmat,
+                    LW = masses.Splus, LM = masses.Splus)
   res$data <- DATA
   res$data.proc <- DATA.proc
   return(res)
 
 }
 
-
-
-it1 <- list(v = c(1.2, 6.3), i = c(4, 2), Unknown = c(4, 2)) # 123456
-it2 <- list(v = c(0.5, 2.2), i = c(4, 2), Unknown = c(6, 3)) # 1356
-it3 <- list(v = c(0.1, 0.2), i = c(1, 2), Unknown = c(1, 5)) # 15
-x1 <- x2 <- x3 <- rep(0, 6)
-x1[it1$i] <- it1$v
-x2[-it1$i][it2$i] <- it2$v
-x3[-it1$i][-it2$i][it3$i] <- it3$v
-cbind(x1, x2, x3)
-# [1] 0.1 6.3 2.2 1.2 0.2 0.5
-result <- cbind(
-  c(0, 6.3, 0, 1.2, 0, 0),
-  c(0, 0, 2.2, 0, 0, 0.5),
-  c(0.1, 0, 0, 0, 0.2, 0))
-
-itlist <- list(it1, it2, it3)
-reference <- 1:6
-unknown <- vector("list", 3)
-for (i in 1:3) {
-  unknown[[i]] <- reference[itlist[[i]]$i]
-  reference <- reference[-itlist[[i]]$i]
-}
-
+# it1 <- list(v = c(1.2, 6.3), i = c(4, 2), Unknown = c(4, 2)) # 123456
+# it2 <- list(v = c(0.5, 2.2), i = c(4, 2), Unknown = c(6, 3)) # 1356
+# it3 <- list(v = c(0.1, 0.2), i = c(1, 2), Unknown = c(1, 5)) # 15
+# x1 <- x2 <- x3 <- rep(0, 6)
+# x1[it1$i] <- it1$v
+# x2[-it1$i][it2$i] <- it2$v
+# x3[-it1$i][-it2$i][it3$i] <- it3$v
+# cbind(x1, x2, x3)
+# # [1] 0.1 6.3 2.2 1.2 0.2 0.5
+# result <- cbind(
+#   c(0, 6.3, 0, 1.2, 0, 0),
+#   c(0, 0, 2.2, 0, 0, 0.5),
+#   c(0.1, 0, 0, 0, 0.2, 0))
+#
+# itlist <- list(it1, it2, it3)
+# reference <- 1:6
+# unknown <- vector("list", 3)
+# for (i in 1:3) {
+#   unknown[[i]] <- reference[itlist[[i]]$i]
+#   reference <- reference[-itlist[[i]]$i]
+# }
+#
+# # Clean workspace
+# rm(list = ls()) ; graphics.off()
+#
+# # Load libraries
+# library(devtools)
+# library(DistatisR)
+#
+# load_all(".")
+# load_all("../sGSVD/")
+#
+# # Load data
+# data(DistAlgo)
+# DistAlgo[3,1,1] <- DistAlgo[1,3,1]
+# # Regular DiStatis
+# res.reg <- distatis(DistAlgo)
+#
+# # Sparse DiStatis
+# res.sp <- sparseDiSTATIS(DistAlgo, sparse.Cmat = TRUE, sparse.Splus = TRUE, components.Cmat = 2L, components.Splus = 2L)
+#
+#
+# A <- res.reg$res4Splus$Splus
+# A - t(A)
 
