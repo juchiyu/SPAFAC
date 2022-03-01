@@ -34,7 +34,7 @@
 #' @example
 sparseDiSTATIS <- function(
   DATA,
-  method="distance", Cmat.is.RV = TRUE,
+  method = "distance", Cmat.is.RV = TRUE,
   masses.Cmat = NULL, masses.Splus = NULL,
   sparse.Cmat = FALSE, sparse.Splus = TRUE,
   components.Cmat = 0, components.Splus = 0,
@@ -62,11 +62,11 @@ sparseDiSTATIS <- function(
   ## compute RV matrix and get it's masses
   Cmat <- GetCmat(DATA.proc, RV = Cmat.is.RV)
   ### masses for the RV matrix
-  if (is.null(masses.Cmat)){
+  if (is.null(masses.Cmat)) {
     masses.Cmat <- rep(1, nrow(Cmat))
-  }else{
+  } else {
     ## check length
-    if (length(masses.Cmat) != nrow(Cmat)){
+    if (length(masses.Cmat) != nrow(Cmat)) {
       stop("The length of `masses.Cmat` does not equal the number of table (i.e., the third dimension of `DATA`).")
     }else{
       masses.Cmat <- masses.Cmat
@@ -74,17 +74,28 @@ sparseDiSTATIS <- function(
   }
 
   ## eigen decomposition of RV.matrix
-  if (sparse.Cmat){ ## NEED SUPSPACE!!
-    sEIG.Cmat <- sparseGEIGEN(X = Cmat, W = masses.Cmat, k = as.integer(components.Cmat),
-                 init = init.Cmat, seed = seed,
-                 rds = rds.Cmat,
-                 grp = grp.Cmat,
-                 orthogonality = orthogonality.Cmat,
-                 OrthSpace = OrthSpace.Cmat,
-                 projPriority = projPriority.Cmat,
-                 itermaxALS = itermaxALS.Cmat, itermaxPOCS = itermaxPOCS.Cmat,
-                 epsALS = epsALS.Cmat, epsPOCS = epsPOCS.Cmat)
-  }else{
+  sEIG.Cmat <- vector(mode = "list", length = components.Cmat)
+  if (sparse.Cmat) { ## NEED SUPSPACE!!
+
+    for (i in 1:components.Cmat) {
+      sEIG.Cmat[[i]] <- sparseGEIGEN(
+        X = Cmat, W = masses.Cmat,
+        k = as.integer(components.Cmat),
+       init = init.Cmat, seed = seed,
+       rds = rds.Cmat[i],
+       grp = grp.Cmat,
+       orthogonality = orthogonality.Cmat,
+       OrthSpace = OrthSpace.Cmat,
+       projPriority = projPriority.Cmat,
+       itermaxALS = itermaxALS.Cmat, itermaxPOCS = itermaxPOCS.Cmat,
+       epsALS = epsALS.Cmat, epsPOCS = epsPOCS.Cmat)
+      # nonzero.ind.list[[i]] <- which(sEIG.Cmat[[i]]$)
+
+
+
+
+    }
+  } else {
     ## plain (generalized) eigen
     if (!is.null(masses.Cmat)){
       ## for generalized eigendecomposition (if needed)
@@ -118,25 +129,27 @@ sparseDiSTATIS <- function(
 
   ## compute compromise
   Splus <- ComputeSplus(DATA.proc, alpha4Splus)
-
+  sGEIG.Splus <- vector(mode = "list", length = components.Cmat)
   ## Eigen decomposition of Splus
   if (sparse.Splus){
-    sGEIG.Splus <- sparseGEIGEN(X = Splus, W = masses.Splus, k = components.Splus,
-                              init = init.Splus, seed = seed,
-                              rds = rds.Splus,
-                              grp = grp.Splus,
-                              orthogonality = orthogonality.Splus,
-                              OrthSpace = OrthSpace.Splus,
-                              projPriority = projPriority.Splus,
-                              itermaxALS = itermaxALS.Splus, itermaxPOCS = itermaxPOCS.Splus,
-                              epsALS = epsALS.Splus, epsPOCS = epsPOCS.Splus)
-  }else{
+    for (i in 1:components.Cmat) {
+      sGEIG.Splus[[i]] <- sparseGEIGEN(X = Splus, W = masses.Splus, k = components.Splus,
+                                init = init.Splus, seed = seed,
+                                rds = rds.Splus,
+                                grp = grp.Splus,
+                                orthogonality = orthogonality.Splus,
+                                OrthSpace = OrthSpace.Splus,
+                                projPriority = projPriority.Splus,
+                                itermaxALS = itermaxALS.Splus, itermaxPOCS = itermaxPOCS.Splus,
+                                epsALS = epsALS.Splus, epsPOCS = epsPOCS.Splus)
+    }
+  } else {
     ## plain (generalized) eigen
     if (!is.null(masses.Splus)){
       ## for generalized eigendecomposition (if needed)
       sqrt_W.Splus <- sqrt(masses.Splus)
       weighted.Splus <- t(t(Splus * sqrt_W.Splus) * sqrt_W.Splus)
-    }else{
+    } else {
       weighted.Splus <- Splus
     }
 
@@ -184,3 +197,29 @@ sparseDiSTATIS <- function(
   return(res)
 
 }
+
+
+
+it1 <- list(v = c(1.2, 6.3), i = c(4, 2), Unknown = c(4, 2)) # 123456
+it2 <- list(v = c(0.5, 2.2), i = c(4, 2), Unknown = c(6, 3)) # 1356
+it3 <- list(v = c(0.1, 0.2), i = c(1, 2), Unknown = c(1, 5)) # 15
+x1 <- x2 <- x3 <- rep(0, 6)
+x1[it1$i] <- it1$v
+x2[-it1$i][it2$i] <- it2$v
+x3[-it1$i][-it2$i][it3$i] <- it3$v
+cbind(x1, x2, x3)
+# [1] 0.1 6.3 2.2 1.2 0.2 0.5
+result <- cbind(
+  c(0, 6.3, 0, 1.2, 0, 0),
+  c(0, 0, 2.2, 0, 0, 0.5),
+  c(0.1, 0, 0, 0, 0.2, 0))
+
+itlist <- list(it1, it2, it3)
+reference <- 1:6
+unknown <- vector("list", 3)
+for (i in 1:3) {
+  unknown[[i]] <- reference[itlist[[i]]$i]
+  reference <- reference[-itlist[[i]]$i]
+}
+
+
