@@ -156,8 +156,15 @@ sparseDiSTATIS <- function(
   sGEIG.Splus <- vector(mode = "list", length = components.Cmat)
   ## Eigen decomposition of Splus
   if (sparse.Splus){
+    alpha4Splus <- lapply(as.list(data.frame(sEIG.Cmat$vectors[, 1:components.Cmat])), function(x) x/sum(x))
+
+    ## compute compromise
+    Splus <- lapply(alpha4Splus, function(alpha) ComputeSplus(DATA.proc, alpha))
+    sGEIG.Splus <- vector(mode = "list", length = components.Cmat)
+
     for (i in 1:components.Cmat) {
-      sGEIG.Splus[[i]] <- sparseGEIGEN(X = Splus, W = masses.Splus, k = components.Splus,
+      sGEIG.Splus[[i]] <- sparseGEIGEN(X = Splus[[i]],
+                                       W = masses.Splus, k = components.Splus,
                                 init = init.Splus, seed = seed,
                                 rds = rds.Splus,
                                 grp = grp.Splus,
@@ -168,6 +175,12 @@ sparseDiSTATIS <- function(
                                 epsALS = epsALS.Splus, epsPOCS = epsPOCS.Splus)
     }
   } else {
+    alpha4Splus <- sEIG.Cmat$vectors[,1]/sum(sEIG.Cmat$vectors[,1])
+
+    ## compute compromise
+    Splus <- ComputeSplus(DATA.proc, alpha4Splus)
+    sGEIG.Splus <- vector(mode = "list", length = components.Cmat)
+
     ## plain (generalized) eigen
     if (!is.null(masses.Splus)){
       ## for generalized eigendecomposition (if needed)
