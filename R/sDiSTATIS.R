@@ -76,11 +76,18 @@ sparseDiSTATIS <- function(
   ## eigen decomposition of RV.matrix
   sEIG.Cmat <- vector(mode = "list", length = components.Cmat)
   if (sparse.Cmat) { ## NEED SUPSPACE!!
+<<<<<<< HEAD
     Cmat.tmp <- Cmat
     nonzero.relative.ind.list <- vector("list", components.Cmat)
     for (i in 1:components.Cmat) {
       sEIG.Cmat[[i]] <- sparseGEIGEN(
         X = Cmat.tmp, W = masses.Cmat,
+=======
+
+    for (i in 1:components.Cmat) {
+      sEIG.Cmat[[i]] <- sparseGEIGEN(
+        X = Cmat, W = masses.Cmat,
+>>>>>>> d14668f4211e50fdc06be2600aaae48f34a3afc2
         k = as.integer(components.Cmat),
        init = init.Cmat, seed = seed,
        rds = rds.Cmat[i],
@@ -90,6 +97,7 @@ sparseDiSTATIS <- function(
        projPriority = projPriority.Cmat,
        itermaxALS = itermaxALS.Cmat, itermaxPOCS = itermaxPOCS.Cmat,
        epsALS = epsALS.Cmat, epsPOCS = epsPOCS.Cmat)
+<<<<<<< HEAD
       nonzero.relative.ind.list[[i]] <- which(sEIG.Cmat[[i]]$u[,1] != 0)
       if (length(nonzero.relative.ind.list[[i]]) == 0) stop("Something went wrong !")
       Cmat.tmp <- Cmat.tmp[-nonzero.relative.ind.list[[i]], -nonzero.relative.ind.list[[i]]]
@@ -118,6 +126,14 @@ sparseDiSTATIS <- function(
                       iter = NULL,
                       SI = NULL)
 
+=======
+      # nonzero.ind.list[[i]] <- which(sEIG.Cmat[[i]]$)
+
+
+
+
+    }
+>>>>>>> d14668f4211e50fdc06be2600aaae48f34a3afc2
   } else {
     ## plain (generalized) eigen
     if (!is.null(masses.Cmat)){
