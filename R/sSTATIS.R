@@ -2,6 +2,7 @@
 #'
 #' @param X Data matrix with \emph{I} rows and \emph{J} columns
 #' @param column.design
+#' @param mfa.normalize TRUE (default) or FALSE.
 #' @param sparse.Cmat TRUE or FALSE (default). If the C matrix (e.g., the RV matrix) is sparsified to obtain the weights.
 #' @param sparse.Splus TRUE (default) or FALSE. If the compromise is sparsified.
 #' @param components.Cmat the number of dimensions to extract from the C matrix (e.g., the RV matrix).
@@ -45,7 +46,7 @@
 #' @source Some lines of the function are inspired by the MExPosition package by Derek Beaton and Cherise Chin Fatt.
 #' @examples
 
-sparseMFA <- function(X, column.design,
+sparseMFA <- function(X, column.design, mfa.normalize = TRUE,
                       sparse.Cmat = FALSE, sparse.Splus = TRUE,
                       components.Cmat = 0, components.Splus = 0,
                       sparseOption = "variable",
@@ -80,29 +81,57 @@ sparseMFA <- function(X, column.design,
     data <- scale(X, center = center, scale = scale) # center and scale before MFA-normalization
   }
 
-  if (mfa.scale){
-    alpha.vec <- vector(length = length(column.design))
-    count.col <- table(column.design)
-    ncol.tab <- c(0, count.col)
-    tab.idx <- matrix(nrow = 2, ncol = length(count.col), dimnames = list(c("from", "to"), names(count.col)))
+  # Get tables into list
+  count.col <- table(column.design)
+  ncol.tab <- c(0, count.col)
+  tab.idx <- matrix(nrow = 2, ncol = length(count.col), dimnames = list(c("from", "to"), names(count.col)))
+  to_total = 0
+  from_total = 1
+  for (i in 1:length(count.col)) {
+    from = ncol.tab[i] + from_total
+    to =  ncol.tab[i+1] + to_total
+    to_total = to
+    from_total = from
+    tab.idx[,i] <- c(from, to)
+  }
+
+  # MFA-normalization (optional)
+  data.proc <- matrix(nrow = nrow(data), ncol = ncol(data), dimnames = dimnames(data))
+  data.proclist <- list(length(count.col))
+  alpha.vec <- vector(length = length(column.design))
+  if (mfa.normalize){
     tab.svd <- list()
     tab.d <- vector(length = length(count.col))
-    to_total = 0
-    from_total = 1
     for (i in 1:length(count.col)) {
-      from = ncol.tab[i] + from_total
-      to =  ncol.tab[i+1] + to_total
-      to_total = to
-      from_total = from
-      tab.svd[[i]] <- svd(data[, from:to])
+      tab.svd[[i]] <- svd(data[, tab.idx[1,i]:tab.idx[2,i]])
       tab.d[i] <- tab.svd[[i]]$d[1] # normalize the center-and-scaled tables
-      alpha.vec[from:to] <- 1/tab.d[i]^2
-      tab.idx[,i] <- c(from, to)
+      alpha.vec[tab.idx[1,i]:tab.idx[2,i]] <- 1/tab.d[i]^2
+      data.proc[,tab.idx[1,i]:tab.idx[2,i]] <- data[,tab.idx[1,i]:tab.idx[2,i]]/(tab.d[i]^2)
+      data.proclist[[i]] <- data[,tab.idx[1,i]:tab.idx[2,i]]/(tab.d[i]^2)
     }
   }else{
     alpha.vec <- rep(1, length(column.design))
+    data.proc <- data
+    for (i in 1:length(count.col)){
+      data.proclist[[i]] <- data[,tab.idx[1,i]:tab.idx[2,i]]
+    }
   }
 
+  # compute RV matrix an
+  Cmat <- GetCmat(DATA.proc, RV = Cmat.is.RV, isCube = FALSE)
+  ### masses for the RV matrix
+  if (is.null(masses.Cmat)){
+    masses.Cmat <- rep(1, nrow(Cmat))
+  }else{
+    ## check length
+    if (length(masses.Cmat) != nrow(Cmat)){
+      stop("The length of `masses.Cmat` does not equal the number of table (i.e., the third dimension of `DATA`).")
+    }else{
+      masses.Cmat <- masses.Cmat
+    }
+  }
+
+  ## eigendecomposition Cmat
 
   if (sparseOption == "variable"){
     grpRight = NULL
