@@ -133,7 +133,7 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
   }
 
   if (is_multitab(res)){
-    if (is_GSVD(res)){
+    if (is_sGSVD(res)){
       n.tab <- ncol(tab.idx)
       out$partial.fi <- array(dim = c(dim(res$fi), n.tab))
       for (i in 1:n.tab){
