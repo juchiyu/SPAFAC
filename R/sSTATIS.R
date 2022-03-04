@@ -46,7 +46,7 @@
 #' @source Some lines of the function are inspired by the MExPosition package by Derek Beaton and Cherise Chin Fatt.
 #' @examples
 
-sparseMFA <- function(X, column.design, mfa.normalize = TRUE,
+sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE,
                       sparse.Cmat = FALSE, sparse.Splus = TRUE,
                       components.Cmat = 0, components.Splus = 0,
                       sparseOption = "variable",
