@@ -55,7 +55,7 @@ sparseDiSTATIS <- function(
   DATA.proc <- array(
     as.numeric(
       unlist(
-        apply(DATA, 3, distatis.preproc, method = method, masses = masses.Splus)
+        apply(DATA, 3, distatis.preproc, method = method, masses = masses.Splus, simplify = FALSE)
       )
     ), dim = dim(DATA), dimnames = dimnames(DATA))
 
@@ -86,7 +86,7 @@ sparseDiSTATIS <- function(
   }
   ## eigen decomposition of RV.matrix
   sEIG.Cmat <- vector(mode = "list", length = components.Cmat)
-  if (sparse.Cmat) { ## NEED SUPSPACE!!
+  if (sparse.Cmat) {
 
     Cmat.tmp <- Cmat
     masses.Cmat.tmp <- masses.Cmat
@@ -132,6 +132,9 @@ sparseDiSTATIS <- function(
                       f = t(t(U * masses.Cmat) * sqrt(values)),
                       iter = NULL,
                       SI = NULL)
+    ## get alphas
+    alpha4Splus <- lapply(as.list(data.frame(sEIG.Cmat$vectors[, 1:components.Cmat])), function(x) x/sum(x))
+
   } else {
     ## plain (generalized) eigen
     if (!is.null(masses.Cmat)){
@@ -158,18 +161,17 @@ sparseDiSTATIS <- function(
                       f = t(t(eigen.Cmat$vectors * masses.Cmat) * sqrt(eigen.Cmat$values)),
                       iter = NULL,
                       SI = NULL)
+    ## get alphas
+    alpha4Splus <- sEIG.Cmat$vectors[,1]/sum(sEIG.Cmat$vectors[,1])
   }
 
-  ## get alphas
-
-  alpha4Splus <- sEIG.Cmat$vectors[,1]/sum(sEIG.Cmat$vectors[,1])
+  ### move sparseGEIGEN into the if-else
 
   ## compute compromise
   Splus <- ComputeSplus(DATA.proc, alpha4Splus)
   sGEIG.Splus <- vector(mode = "list", length = components.Cmat)
   ## Eigen decomposition of Splus
   if (sparse.Splus){
-    alpha4Splus <- lapply(as.list(data.frame(sEIG.Cmat$vectors[, 1:components.Cmat])), function(x) x/sum(x))
 
     ## compute compromise
     Splus <- lapply(alpha4Splus, function(alpha) ComputeSplus(DATA.proc, alpha))

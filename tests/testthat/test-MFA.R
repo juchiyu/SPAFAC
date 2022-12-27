@@ -1,4 +1,4 @@
-# library(MExPosition)
+library(MExPosition)
 library(FactoMineR)
 library(sGSVD)
 library(SPAFAC)
