@@ -46,9 +46,6 @@ sparseDiCA(
 
 \item{grpRight}{the grouping vector for the columns}
 }
-\value{
-
-}
 \description{
 Group sparse Discriminant Correspondence Analysis
 }

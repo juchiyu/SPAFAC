@@ -40,9 +40,6 @@ sparseMCA(
 
 \item{correction4SI}{}
 }
-\value{
-
-}
 \description{
 Group sparse Multiple Correspondence Analysis
 }

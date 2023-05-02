@@ -42,9 +42,6 @@ sparsePLSCA(
 
 \item{k}{the number of dimensions}
 }
-\value{
-
-}
 \description{
 sparse Partial Least Square Correspondence anlaysis
 }

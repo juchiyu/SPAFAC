@@ -55,9 +55,6 @@ sparsePLSC(
 
 \item{epsPOCS}{}
 }
-\value{
-
-}
 \description{
 sparse Partial Least Square Correlation
 }

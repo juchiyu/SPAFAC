@@ -23,6 +23,7 @@ sparseMFA(
   rdsLeft = rep(1, components),
   rdsRight = rep(1, components),
   grpLeft = NULL,
+  grpRight = NULL,
   orthogonality = "loadings",
   OrthSpaceLeft = NULL,
   OrthSpaceRight = NULL,
@@ -49,9 +50,6 @@ sparseMFA(
 \item{tol}{default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).}
 
 \item{epsPOCS}{}
-}
-\value{
-
 }
 \description{
 sparse Multiple Factor Analysis

@@ -36,9 +36,6 @@ sparseCA(
 
 \item{k}{the number of dimensions}
 }
-\value{
-
-}
 \description{
 Group sparse Correspondence Analysis
 }
