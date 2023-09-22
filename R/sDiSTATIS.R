@@ -190,6 +190,8 @@ sparseDiSTATIS <- function(
                                 epsALS = epsALS.Splus, epsPOCS = epsPOCS.Splus)
     }
   } else {
+
+    ## BELOW, we need a LOOP
     alpha4Splus <- sEIG.Cmat$vectors[,1]/sum(sEIG.Cmat$vectors[,1])
 
     ## compute compromise
