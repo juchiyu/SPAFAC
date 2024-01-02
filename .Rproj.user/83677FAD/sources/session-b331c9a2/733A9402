@@ -1,0 +1,24 @@
+{
+    "id": "733A9402",
+    "path": "~/git/SPAFAC/vignettes/example1.Rmd",
+    "project_path": "vignettes/example1.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1704455153295.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1704455151,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1704455151,
+    "read_only": false,
+    "read_only_alternatives": []
+}

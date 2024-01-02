@@ -1,0 +1,26 @@
+{
+    "id": "21C945E8",
+    "path": "~/git/SPAFAC/data-raw/example1_sCA.R",
+    "project_path": "data-raw/example1_sCA.R",
+    "type": "r_source",
+    "hash": "3698964758",
+    "contents": "",
+    "dirty": false,
+    "created": 1704965480888.0,
+    "source_on_save": false,
+    "relative_order": 16,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "6,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1704965666,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1704965666318,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,117 @@
+url: ~
+
+home:
+  title: "edibble - an R package to facilitate construction of experimental designs"
+  description: Facilitate contruction of experimental designs.
+
+template:
+  bootstrap: 5
+  bootswatch: sandstone
+  opengraph:
+    twitter:
+      creator: "@statsgen"
+      card: summary_large_image
+  params:
+    bootswatch: united
+    ganalytics: G-7HJYKJBM5E
+    docsearch:
+      api_key: 12ac28b2a1c1bed41e27966b7b482faf
+      index_name: edibble
+
+reference:
+- title: "Constructing an experiment"
+  desc: >
+    These are the main functions used to set experiments from scratch.
+  contents:
+  - design
+  - set_units
+  - set_trts
+  - allot_trts
+  - allot_units
+  - assign_trts
+  - assign_units
+  - serve_table
+  - allot_table
+  - nested_in
+  - crossed_by
+  - order_trts
+- title: "Understanding your design"
+  desc: >
+    Function helpers to understand your design better.
+  contents:
+  - plot.edbl_design
+  #- plot_fct_graph
+  #- plot_lvl_graph
+  - examine_recipe
+  - simulate_process
+  - examine_process
+  - examine_process_values
+  - simulate_rcrds
+  - with_params
+  - autofill_rcrds
+  - with_variables
+  - design_anatomy
+  - design_model
+- title: "Named experimental designs"
+  desc: >
+    The recipe of a named experimental design is displayed using the `menu_*` functions.
+    The `takeout()` allows you to get the design table from selected menu.
+  contents:
+  - starts_with("menu_")
+  - scan_menu
+  - takeout
+- title: "Latin-related designs"
+  desc: "Helper functions for creating orthogonal array structures."
+  contents:
+  - starts_with("latin")
+- title: "Exporting the experimental design"
+  desc: >
+    These help to create data validation rules and export the experimental layout as xlsx file.
+  contents:
+  - set_rcrds
+  - set_rcrds_of
+  - expect_rcrds
+  - contains("to_be")
+  - with_value
+  - export_design
+- title: "Experiment from existing data"
+  desc: >
+    These are functions relevant when making an experiment from existing data
+- contents:
+  - as_edibble
+- title: "Experiments"
+  desc: >
+    These are some example experiments.
+  contents:
+  - lady_tasting_tea
+  - skittles
+- title: "Table manipulators"
+  desc: >
+    These functions manipulate or wrangle the edibble table into another form.
+  contents:
+  - pivot_wider_by
+  - split_by
+  - trts_table
+  - as.data.frame.edbl_table
+  - as_tibble.edbl_table
+- title: "Utility functions"
+  desc: >
+    These are mostly for internal usage and for those who wish to extend edibble functions.
+  contents:
+  - Provenance
+  - activate_provenance
+  - nesting_structure
+  - set_attrs
+  - design-helpers
+  - starts_with("fct")
+  - starts_with("lvl")
+  - edibble-package
+  - new_edibble
+  - print.edbl_design
+  - utility-edibble-var
+  - is_takeout
+  - column
+  - is_provenance
+  - starts_with("label")
+  - rescale_values
+  - index_levels

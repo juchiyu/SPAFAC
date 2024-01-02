@@ -1,0 +1,936 @@
+---
+title: "Applying sMCA to the NCKU questionnaire data-set"
+author: "Ju-Chi.Yu"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  rmdformats::downcute:
+    highlight: kate
+    df_print: paged
+    code_folding: hide
+  pdf_document: default
+always_allow_html: true
+knit: (function(inputFile, encoding) { 
+          rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file='sparseMCA_20210712.html') })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+devtools::load_all("../../../../Abdi_lab/Colaborations/Rpackages/sGSVD")
+devtools::load_all("../../../../Abdi_lab/Colaborations/Rpackages/SPAFAC")
+library(ExPosition)
+library(FactoMineR)
+library(ggplot2)
+library(ggrepel)
+library(magrittr)
+library(sGSVD)
+library(SPAFAC)
+library(superheat)
+library(PTCA4CATA)
+library(tidyverse)
+library(data4PCCAR)
+library(inlmisc)
+library(grid)
+library(gridExtra)
+library(tikzDevice)
+
+source("../functions/PlotFactor.R")
+source("../functions/createxyLabels.gen.digit.R")
+source("../functions/createxyLabels.gen.tikz.R")
+source("../functions/createLabel.gen.digit.R")
+source("../functions/plot.smca.results.R")
+source("../functions/PlotMyScree.R")
+source("../functions/PlotMyScreeTikz.R")
+
+# other functions
+extract_si <- function(sdisca, si = "SI") {
+  if (class(sdisca) == "list") {
+    return(sdisca$sparsity$SI[[si]])
+  } else if (is.na(sdisca)) {
+    return(NA)
+  } else {
+    stop("Something is a foot!")
+  }
+}
+
+pivot_the_tab <- function(dat) {
+  df <- data.frame(V = unname(t(data.frame(dat))))
+  df %>% 
+    tidyr::pivot_longer(starts_with("V"), names_to = "k", names_prefix = "V\\.") %>%
+    select(value) %>% purrr::as_vector() %>% unname()
+}
+```
+
+# Data
+
+```{r read}
+# read data =================
+data.dir <- ("../../01_data/")
+load(paste0(data.dir, "MCA_IOPdata.rda"))
+Demo <- readRDS("Demo.rds")
+IOP.cat <- readRDS("IOP.cat.rds")
+IOP.disj <- readRDS("IOP.disj.rds")
+
+# row colors ------------------------
+# col.list <- list()
+# # table(Demo$genxage)
+# # col.genxage <- c('#ffa9a5', '#d66d6c', '#a3363c', '#690011', '#acbfff', '#6b8aef', '#3157cb', '#002991')
+# col.genxage <- c('#002991', '#a3363c', '#690011', '#3157cb', '#acbfff','#ffa9a5', '#d66d6c', '#6b8aef')
+# names(col.genxage) <- names(table(Demo$genxage))
+# col.list$oc <- dplyr::recode(Demo$genxage, !!!col.genxage)
+# col.list$gc <- as.matrix(col.genxage)
+# rownames(col.list$gc) <- unique(Demo$genxage)
+
+# row colors by gender only --------------------
+col.list <- list()
+col.gen <- c('#002991','#a3363c')
+names(col.gen) <- names(table(Demo$gender))
+col.list$oc <- dplyr::recode(Demo$gender, !!!col.gen)
+col.list$gc <- as.matrix(col.gen)
+rownames(col.list$gc) <- unique(Demo$gender)
+
+# column colors ----------------------------
+col.dx <- c(rep("Independent", 21), rep("Interdependent", 21))
+names(col.dx) <- paste0("Q", c(1:42))
+col.idx <- c("Interdependent" = "#458b00",
+             "Independent"   = "#510e53")
+var.col <- list()
+var.col$oc <- dplyr::recode(col.dx, !!!col.idx) %>% as.matrix
+var.col$gc <- col.idx %>% as.matrix
+colnames(var.col$oc) <- colnames(var.col$gc) <- "color"
+
+level.dx <- sub("\\..*", "", colnames(IOP.disj))
+col.idx.lv <- var.col$oc %>% as.vector
+names(col.idx.lv) <- colnames(IOP.cat)
+col.lv <- list()
+col.lv$oc <- dplyr::recode(level.dx, !!!col.idx.lv) %>% as.matrix
+rownames(col.lv$oc) <- colnames(IOP.disj)
+col.lv$gc <- var.col$oc
+rownames(col.lv$gc) <- colnames(IOP.cat)
+
+# level designs ------------------------------
+level.indmat <- makeNominalData(as.matrix(level.dx))
+colnames(level.indmat) <- unique(level.dx)
+rownames(level.indmat) <- colnames(IOP.disj)
+
+level.cat.dx <- dplyr::recode(level.dx, !!!col.dx)
+```
+
+## Histograms
+
+```{r histo}
+indx.col <- colnames(IOPdata) %>% strsplit(".\t") %>% unlist %>% matrix(ncol = 2, byrow = TRUE, dimnames = list(c(), c("id","questions")))
+
+IOPdata <- data.frame(IOPdata)
+colnames(IOPdata) <- paste0("Q",indx.col[,"id"])
+# histogram -------------
+data.long <- IOPdata %>% gather
+data.long$key <- factor(data.long$key, levels = paste0("Q", c(1:42)))
+ggplot(data.long, aes(value)) + 
+  geom_histogram() +
+  facet_wrap(~key, scale = 'free_x')
+
+# histogram -------------
+data.long.cat <- IOP.cat %>% gather
+data.long.cat$key <- factor(data.long.cat$key, levels = paste0("Q", c(1:42)))
+ggplot(data.long.cat, aes(value)) + 
+  geom_bar() +
+  facet_wrap(~key, scale = 'free_x')
+
+```
+
+
+## Heatmap of the disjunctive coded data.
+
+```{r heatmap01, fig.height=7, fig.width=7}
+# pheatmap::pheatmap(t(IOP.disj), border_color = "white", breaks = c(0, 0.5, 1), color = c("steelblue", "tomato"), legend_breaks = c(0, 0.25,
+
+IOP.burt <- t(IOP.disj) %*% IOP.disj
+IOP.phi <- phi2Mat4BurtTable(IOP.cat)$phi2.mat
+light.varcol <- list()
+light.varcol$gc <- c("Interdependent" = ShadesColor(var.col$gc[1])[2], "Independent" = ShadesColor(var.col$gc[2], 80)[2])
+light.varcol$oc <- dplyr::recode(col.dx, !!!light.varcol$gc) %>% as.matrix
+superheat(IOP.phi,
+          clustering.method = "hierarchical",
+          linkage.method = "ward.D2",
+          row.dendrogram = T, col.dendrogram = T,
+          heat.pal = c("white", "#3b5b90","#053061"),
+          heat.pal.values = c(0,0.5, 1),
+          heat.lim = c(0,0.5),
+          left.label.size = 0.05,
+          bottom.label.size = 0.05,
+          y.axis.reverse = TRUE,
+          left.label = "variable",
+          left.label.text.size = 3,
+          bottom.label.text.size = 2,
+          left.label.col = light.varcol$oc,
+          bottom.label.col = light.varcol$oc,
+)
+
+```
+
+
+# MCA {.tabset}
+
+```{r mca, cache = TRUE}
+mca.res <- epMCA(IOP.cat, DESIGN = Demo$genxage, 
+                 make_data_nominal = TRUE, make_design_nominal = TRUE, graphs = FALSE)
+
+all.levels <- paste0(rep(paste0("Q",c(1:42),"."), each = 4), c("a", "b", "c", "d"))
+order.levels <- all.levels[all.levels %in% rownames(mca.res$ExPosition.Data$fj)]
+mca.res$ExPosition.Data$fj <- mca.res$ExPosition.Data$fj[order.levels,]
+mca.res$ExPosition.Data$cj <- mca.res$ExPosition.Data$cj[order.levels,]
+```
+
+## Respondants
+
+```{r plotMCArespondants, cache = TRUE}
+mca.fi <- PlotFactor(lambda = mca.res$ExPosition.Data$pdq.uncor$Dv^2,
+                     tau = 100*(mca.res$ExPosition.Data$pdq.uncor$Dv^2/sum(mca.res$ExPosition.Data$pdq.uncor$Dv^2)),
+                     digit4tau = 2,
+                     hat = FALSE,
+                     f = mca.res$ExPosition.Data$fi,
+                     design = Demo$gender,
+                     label.axisName = "Component ",alpha.mean.point = 0.7,
+                     cex.mean.point = 2,
+                     cex.mean.text = 2,
+                     title = "MCA: factor scores of \nindividuals (rows)",
+                     col.list = col.list)
+
+mca.fi.plot <- mca.fi$f.map$zeMap_background + mca.fi$CI + mca.fi$mean.map$zeMap_dots + mca.fi$mean.map$zeMap_text + mca.fi$label+ theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+```
+
+
+## Items
+
+```{r plotMCAitems, cache = TRUE}
+mca.fj <- PTCA4CATA::createFactorMap(mca.res$ExPosition.Data$fj, axis1 = 1, axis2 = 2,
+                                     col.points = col.lv$oc,
+                                     col.labels = col.lv$oc,
+                                     alpha.points = 0.3,
+                                     text.cex = 2,
+                                     cex = 1,
+                                     col.background = NULL,
+                                     col.axes = "#42376B",
+                                     title = "MCA: factor scores of \nvariable levels (columns)",
+                                     width.axes = 0.5,
+                                     label.axisName = "Component ",
+                                     alpha.axes = 0.5)
+mca.fjlines <- data4PCCAR::addLines4MCA(mca.res$ExPosition.Data$fj,linetype = 5,
+                                        alpha = 0.5,
+                                        axis_h = 1, axis_v = 2,
+                                        col4Var = col.lv$gc)
+mca.fj$zeMap_background + mca.fj$zeMap_dots + mca.fj$zeMap_text + mca.fjlines + mca.fi$label
+mca.fj.plot <- mca.fj$zeMap_background + mca.fj$zeMap_dots + mca.fjlines + mca.fi$label+ theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+
+# barplot
+mca.fjbar1 <- PrettyBarPlot2(bootratio = mca.res$ExPosition.Data$fj[,1],
+                             threshold = 0,
+                             color4bar = col.lv$oc)
+
+mca.fjbar1 +
+  geom_line(aes(x = IDnum, y = bootratio, group = as.vector(level.dx)), size = 1) 
+
+mca.fjbar2 <- PrettyBarPlot2(bootratio = mca.res$ExPosition.Data$fj[,2],
+                             threshold = 0,
+                             color4bar = col.lv$oc)
+
+mca.fjbar2 +
+  geom_line(aes(x = IDnum, y = bootratio, group = as.vector(level.dx)), size = 1) 
+
+```
+
+## Item contributions
+
+```{r plotMCAitemsCtr, cache = TRUE}
+mca.var.cj <- t(level.indmat) %*% mca.res$ExPosition.Data$cj[rownames(level.indmat),]
+mca.cj <- createFactorMap(mca.var.cj,
+                          col.points = col.lv$gc,
+                          col.labels = col.lv$gc,
+                          col.background = NULL,
+                          col.axes = "orchid4",
+                          label.axisName = "Component ",
+                          cex = 3,
+                          text.cex = 3)
+
+mca.cj$zeMap + mca.fi$label
+```
+
+# separate MCA {.tabset}
+
+```{r mca.sep, cache = TRUE}
+IOP.cat.indep <- IOP.cat[, col.dx == "Independent"]
+IOP.cat.inter <- IOP.cat[, col.dx == "Interdependent"]
+mca.indep <- epMCA(IOP.cat.indep, DESIGN = Demo$genxage, 
+                   make_data_nominal = TRUE, make_design_nominal = TRUE, graphs = FALSE)
+mca.inter <- epMCA(IOP.cat.inter, DESIGN = Demo$genxage, 
+                   make_data_nominal = TRUE, make_design_nominal = TRUE, graphs = FALSE)
+
+order.levels.indep <- all.levels[all.levels %in% rownames(mca.indep$ExPosition.Data$fj)]
+mca.indep$ExPosition.Data$fj <- mca.indep$ExPosition.Data$fj[order.levels.indep,]
+mca.indep$ExPosition.Data$cj <- mca.indep$ExPosition.Data$cj[order.levels.indep,]
+order.levels.inter <- all.levels[all.levels %in% rownames(mca.inter$ExPosition.Data$fj)]
+mca.inter$ExPosition.Data$fj <- mca.inter$ExPosition.Data$fj[order.levels.inter,]
+mca.inter$ExPosition.Data$cj <- mca.inter$ExPosition.Data$cj[order.levels.inter,]
+```
+
+## Scree
+
+```{r scree, cache = TRUE}
+PlotScree(mca.indep$ExPosition.Data$eigs, col.ns = var.col$gc[1], plotKaiser = TRUE, title = "Independent items")
+PlotScree(mca.inter$ExPosition.Data$eigs, col.ns = var.col$gc[2], plotKaiser = TRUE, title = "Interdependent items")
+```
+
+## Respondants
+
+```{r plotfi.sep, cache = TRUE}
+mca.fi.indep <- PlotFactor(lambda = mca.indep$ExPosition.Data$eigs,
+                           tau = mca.indep$ExPosition.Data$t,
+                           f = mca.indep$ExPosition.Data$fi,
+                           design = Demo$gender,
+                           col.list = col.list)
+
+mca.fi.indep$f.map$zeMap_background + mca.fi.indep$f.map$zeMap_dots + mca.fi.indep$CI + mca.fi.indep$mean.map$zeMap_dots + mca.fi.indep$mean.map$zeMap_text + mca.fi.indep$label
+
+mca.fi.inter <- PlotFactor(lambda = mca.inter$ExPosition.Data$eigs,
+                           tau = mca.inter$ExPosition.Data$t,
+                           f = mca.inter$ExPosition.Data$fi,
+                           design = Demo$gender,
+                           col.list = col.list)
+
+mca.fi.inter$f.map$zeMap_background + mca.fi.inter$f.map$zeMap_dots + mca.fi.inter$CI + mca.fi.inter$mean.map$zeMap_dots + mca.fi.inter$mean.map$zeMap_text + mca.fi.inter$label
+```
+
+## Items
+
+```{r plotfj.sep, cache = TRUE}
+mca.fj.indep <- PTCA4CATA::createFactorMap(mca.indep$ExPosition.Data$fj, 
+                                           axis1 = 1, axis2 = 2,
+                                           col.points = col.lv$gc[1],
+                                           col.labels = col.lv$gc[1],
+                                           alpha.points = 0.3,
+                                           text.cex = 2,
+                                           col.background = NULL,
+                                           col.axes = "orchid4",
+                                           alpha.axes = 0.5)
+mca.fjlines.indep <- data4PCCAR::addLines4MCA(mca.indep$ExPosition.Data$fj,
+                                              linetype = 5,
+                                              axis_h = 1, axis_v = 2,
+                                              col4Var = rep(col.lv$gc[1],ncol(IOP.cat.indep)))
+mca.fj.indep$zeMap_background + mca.fj.indep$zeMap_dots + mca.fj.indep$zeMap_text + mca.fjlines.indep + mca.fi.indep$label
+
+mca.fj.inter <- PTCA4CATA::createFactorMap(mca.inter$ExPosition.Data$fj, 
+                                           axis1 = 1, axis2 = 2,
+                                           col.points = col.lv$gc[22],
+                                           col.labels = col.lv$gc[22],
+                                           alpha.points = 0.3,
+                                           text.cex = 2,
+                                           col.background = NULL,
+                                           col.axes = "orchid4",
+                                           alpha.axes = 0.5)
+mca.fjlines.inter <- data4PCCAR::addLines4MCA(mca.inter$ExPosition.Data$fj,
+                                              linetype = 5,
+                                              axis_h = 1, axis_v = 2,
+                                              col4Var = rep(col.lv$gc[22],ncol(IOP.cat.inter)))
+mca.fj.inter$zeMap_background + mca.fj.inter$zeMap_dots + mca.fj.inter$zeMap_text + mca.fjlines.inter + mca.fi.inter$label
+```
+
+# sMCA 
+
+## Sparsity Index {.tabset}
+
+```{r allparz, cache = TRUE}
+I <- nrow(IOP.cat)
+J <- ncol(IOP.cat)
+
+IOP.disj <- tab_disjonctif(IOP.cat)
+J.lv <- ncol(IOP.disj)
+grp.col <- colnames(IOP.disj) %>% sub("\\..+", "", .)
+
+K <- 14L
+rds <- rev(seq(1, sqrt(J), length = 20))
+
+parz <- cbind(rds = rds)
+
+iter <- 1
+res.smca.list <- NULL
+U0 <- NULL
+V0 <- NULL
+
+# K = 9
+# checksmca <- sparseMCA(DATA = IOP.cat, 
+#              components = K, 
+#              correction4SI = "gsvd",
+#              rdsLeft = rep(sqrt(I), K), 
+#              rdsRight = rep(0.3323447 * sqrt(J), K), 
+#              initLeft = U0, initRight = V0,
+#              grpLeft = NULL, grpRight = grp.col)
+
+for (rds.iter in 1:nrow(parz)) {
+  print(sprintf("Radius (right): %0.2f", parz[rds.iter, 1]))
+  res.smca.list[[iter]] <- tryCatch(
+    sparseMCA(DATA = IOP.cat, 
+             components = K, 
+             correction4SI = "gsvd",
+             rdsLeft = rep(sqrt(I), K), 
+             rdsRight = rep(parz[rds.iter, 1], K), 
+             initLeft = U0, initRight = V0,
+             grpLeft = NULL, grpRight = grp.col), error = function(e) NA
+    )
+  if (!is.na(res.smca.list[[iter]])){
+    U0 <- res.smca.list[[iter]]$gsvd$p
+    V0 <- res.smca.list[[iter]]$gsvd$q
+  }
+  iter <- iter + 1
+}
+
+iter <- 1
+res.smca.list2 <- NULL
+U0 <- NULL
+V0 <- NULL
+
+for (rds.iter in 1:nrow(parz)) {
+  print(sprintf("Radius (right): %0.2f", parz[rds.iter, 1]))
+  res.smca.list2[[iter]] <- tryCatch(
+    sparseMCA(DATA = IOP.cat, 
+             components = K, 
+             correction4SI = "mca",
+             rdsLeft = rep(sqrt(I), K), 
+             rdsRight = rep(parz[rds.iter, 1], K), 
+             initLeft = U0, initRight = V0,
+             grpLeft = NULL, grpRight = grp.col), error = function(e) NA
+    )
+  if (!is.na(res.smca.list2[[iter]])){
+    U0 <- res.smca.list2[[iter]]$gsvd$p
+    V0 <- res.smca.list2[[iter]]$gsvd$q
+  }
+  iter <- iter + 1
+}
+
+### record results
+dat.si <- data.frame(
+  parz = parz, 
+  SI = unname(t(data.frame(SI = sapply(res.smca.list, extract_si, "SIright")))))
+
+
+dat.si.m <- dat.si %>% tidyr::pivot_longer(starts_with("SI"), names_to = "k", names_prefix = "SI\\.")
+
+dat.fit.zeros <- data.frame(
+  rds = dat.si.m$rds, 
+  k = dat.si.m$k,
+  fit = pivot_the_tab(sapply(res.smca.list, extract_si, "r1")),
+  zeros = pivot_the_tab(sapply(res.smca.list, extract_si, "r3")),
+  SI = dat.si.m$value)
+
+theta <- seq(pi, 3/2*pi, length.out = 150)
+
+```
+
+```{r}
+dimcol <- GetTolColors(n = 14, scheme = "discrete rainbow")
+names(dimcol) <- as.factor(c(14:1))
+
+dat.fit.zeros <- na.omit(dat.fit.zeros)
+dat.fit.zeros$max <- ifelse(dat.fit.zeros$SI == max(dat.fit.zeros$SI), "MAX", "NOTMAX")
+dat.fit.zeros$MAX <- ifelse(dat.fit.zeros$SI == max(dat.fit.zeros$SI), "darkorchid4", "white")
+dat.fit.zeros$alpha <- ifelse(dat.fit.zeros$SI == max(dat.fit.zeros$SI), 1, 0.2)
+```
+
+### Compute sparsity Index
+
+We use Trendavilov's sparsity index: 
+
+\begin{align}
+  \text{SI} & =  \rone  \rfour
+\end{align}
+where
+\[
+   \rone = \frac{\displaystyle \sum_{\ell=1}^R \hat\delta_\ell^2(s_1, s_2)}{\displaystyle \sum_{\ell=1}^R \delta_\ell^2}
+\]
+
+```{r SI}
+check.si<- data.frame(
+  parz, 
+   SI.dim1 = dat.si$SI.1,
+  SI.dim2 = dat.si$SI.2,
+  SI.dim3 = dat.si$SI.3,
+  SI.dim4 = dat.si$SI.4,
+  SI.dim5 = dat.si$SI.5,
+  SI.dim6 = dat.si$SI.6,
+  SI.dim7 = dat.si$SI.7,
+  SI.dim8 = dat.si$SI.8,
+  SI.dim9 = dat.si$SI.9,
+  SI.dim10 = dat.si$SI.10,
+  SI.dim11 = dat.si$SI.11,
+  SI.dim12 = dat.si$SI.12,
+  SI.dim13 = dat.si$SI.13,
+  SI.dim14 = dat.si$SI.14)
+```
+
+### Draw sparsity index lines
+
+```{r}
+si.line <- ggplot(na.omit(check.si), aes(x = rds / sqrt(J))) + 
+  geom_point(aes(y = SI.dim1, color = "1"), alpha = 0.2) +  geom_line(aes(y = SI.dim1, color = "1"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim2, color = "2"), alpha = 0.2) +  geom_line(aes(y = SI.dim2, color = "2"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim3, color = "3"), alpha = 0.2) +  geom_line(aes(y = SI.dim3, color = "3"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim4, color = "4"), alpha = 0.2) +  geom_line(aes(y = SI.dim4, color = "4"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim5, color = "5"), alpha = 0.2) +  geom_line(aes(y = SI.dim5, color = "5"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim6, color = "6"), alpha = 0.2) +  geom_line(aes(y = SI.dim6, color = "6"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim7, color = "7"), alpha = 0.2) +  geom_line(aes(y = SI.dim7, color = "7"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim8, color = "8"), alpha = 0.2) +  geom_line(aes(y = SI.dim8, color = "8"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim10, color = "10"), alpha = 0.2) +  geom_line(aes(y = SI.dim10, color = "10"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim11, color = "11"), alpha = 0.2) +  geom_line(aes(y = SI.dim11, color = "11"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim12, color = "12"), alpha = 0.2) +  geom_line(aes(y = SI.dim12, color = "12"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim13, color = "13"), alpha = 0.2) +  geom_line(aes(y = SI.dim13, color = "13"), alpha = 0.2) +
+  geom_point(aes(y = SI.dim14, color = "14"), alpha = 0.2) +  geom_line(aes(y = SI.dim14, color = "14"), alpha = 0.2) +
+  geom_line(aes(y = SI.dim9, color = "#42376B"), size = 0.4) + geom_point(aes(y = SI.dim9, color = "9"), size = 2) +  
+  # scale_color_discrete()+
+  guides(color = guide_legend(nrow = 2, byrow = TRUE)) +
+  scale_color_manual(breaks = as.factor(c(1:14)), values = dimcol) +
+  theme_bw() +
+  ylim(0, 0.5) +
+  labs(x = "Sparsity parameter", y = "Sparsity Index", color = "Number of\nComponents") + 
+  coord_equal() +
+  # ggtitle("Sparsity index") + 
+  theme(
+    axis.title = element_text(size = 8, color = "#42376B"), 
+    axis.text = element_text(size = 8, color = "#42376B"), plot.margin = unit(c(0,0,0,0), unit = "cm"),
+    legend.key.size = unit(0.1, "cm"), legend.text = element_text(size = 6), legend.position = "bottom",
+    legend.spacing.x = unit(0.05, "cm"),
+    legend.margin = margin(0,0,0,0), legend.box.margin = margin(-5,0,0,0),
+    legend.title.align = 0, legend.title = element_text(size = 6),
+    title = element_text(size = 8, color = "#42376B"), 
+    panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA),
+    panel.grid = element_blank())
+si.line
+```
+
+### Draw figures of fit
+
+```{r}
+siplot <- ggplot(dat.fit.zeros, aes(zeros, fit)) + 
+  geom_hline(yintercept = 1, color = "#42376B", alpha = 0.6, linetype = 3) + 
+  geom_vline(xintercept = 1, color = "#42376B", alpha = 0.6, linetype = 3) + 
+  lapply(seq(0.25, 1.25, by = 0.25), function(r) annotate("path",
+                                                          x = 1 + r*cos(theta),
+                                                          y = 1 + r*sin(theta),
+                                                          color = "#42376B")) + 
+  lapply(seq(0.125, 1.5, by = 0.25), function(r) annotate("path",
+                                                          x = 1 + r*cos(theta),
+                                                          y = 1 + r*sin(theta),
+                                                          color = "#42376B", size = 0.2))  +
+  geom_abline(intercept = 0, slope = 1, color = "#42376B", alpha = 0.6, linetype = 3) +
+  # geom_line(aes(color = k), alpha = 0.4) +
+  # geom_point(aes(size = SI, fill = k, alpha = I(alpha)), color = dat.fit.zeros$MAX, shape = 21, stroke = 1) +
+   geom_point(aes(alpha = I(alpha), color = k)) +
+  theme_bw() + 
+  # scale_shape_manual(values = 21) + 
+  scale_color_manual(breaks= as.factor(c(1:14)), values = dimcol) +
+  scale_fill_manual(breaks= as.factor(c(1:14)), values = dimcol) +
+  coord_equal(xlim=0:1, ylim = 0:1) + 
+  guides(fill = FALSE, color = FALSE, size = FALSE) +
+  labs(x = "Zero ratio", y = "Fit", size = "Sparsity\nIndex", fill = "Number of\nComponents") + 
+  # ggtitle("Ratio of zeros as a\nfunction of the fit ratio") + 
+  theme(
+    axis.title = element_text(size = 8, color = "#42376B"), 
+    axis.text = element_text(size = 8, color = "#42376B"), 
+    title = element_text(size = 8, color = "#42376B"),
+    panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA),
+    plot.margin = unit(c(0.1,0,0,0), unit = "cm"),
+    panel.grid = element_blank()) + 
+  with(dat.fit.zeros[which.max(dat.fit.zeros$SI),], annotate(geom = "point", x = zeros, y = fit, alpha = alpha, fill = dimcol["9"], color = "darkorchid4", shape = 21, size = 1.5)) +
+  with(dat.fit.zeros[which.max(dat.fit.zeros$SI),], annotate(geom = "segment", x = zeros + 0.15, y = fit + 0.2, xend = zeros+ 0.02, yend = fit + 0.02, arrow = arrow(length = unit(0.05, "inches"), type = "closed"), color = "darkorchid4", size = 0.5)) +
+  # with(dat.fit.zeros[which.max(dat.fit.zeros$SI),], annotate(geom = "segment", x = zeros + 0.022, y = fit + 0.0225, xend = zeros+ 0.021, yend = fit + 0.021, arrow = arrow(length = unit(0.04, "inches"), type = "closed"), color = "#c9dff2", size = 0.01)) + 
+  with(dat.fit.zeros[which.max(dat.fit.zeros$SI),], annotate(geom = "label", x = zeros + 0.16, y = fit + 0.2, color = "darkorchid4", label = substring(sprintf("%.3f", SI), 2), fill = "#c9dff2", size = 2.5))
+
+siplot
+```
+
+### Optimal sparsity
+
+```{r}
+dat.fit.zeros.minus1 <- dat.fit.zeros %>% filter(k > 1)
+kopt <- as.integer(dat.fit.zeros.minus1$k[which.max(dat.fit.zeros.minus1$SI)])
+rdsopt <- dat.fit.zeros.minus1$rds[which.max(dat.fit.zeros.minus1$SI)]
+SIopt <- max(dat.fit.zeros.minus1$SI, na.rm = TRUE)
+
+kopt;rdsopt/sqrt(J);SIopt
+```
+
+## Fixed sparse parameters {.tabset}
+
+```{r sparse MCA, cache = TRUE}
+
+dim2get <- kopt
+rdsleft <- rep(1 * sqrt(I), dim2get)
+# rdsright <- rep(0.5 * sqrt(J), dim2get)
+rdsright <- rep(rdsopt, dim2get) #0.5994068 
+
+smca.res <- sparseMCA(
+  IOP.cat,
+  init = "svd",
+  correction4SI = "gsvd",
+  components = dim2get,
+  rdsLeft = rdsleft,
+  rdsRight = rdsright,
+  grpLeft = NULL,
+  grpRight = grp.col
+)
+
+```
+
+```{r smca.scree}
+smca.eig <- data.frame(eig = smca.res$eig, tau =  100* (smca.res$eig / sum(mca.res$ExPosition.Data$pdq.uncor$Dv^2)))
+
+scree.plot <- PlotMyScreeTikz(smca.eig, cex = 2, text.cex = 8, lwd = 0.5)+ theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, fill = NA, color = "#42376B"))
+scree.plot
+```
+
+### Respondants
+
+```{r plot sparse MCA respondants, cache = TRUE}
+# cp 1 & 2
+smca.fi <- PlotFactor(
+  lambda = smca.res$eig,
+  tau = 100 * (smca.res$eig/sum(mca.res$ExPosition.Data$pdq.uncor$Dv^2)),
+  # tau = 100 * smca.res$eig/sum(mca.res$ExPosition.Data$eigs),
+  hat = TRUE,
+  f = smca.res$fi,
+  design = Demo$gender,
+  col.list = col.list,
+  label.axisName = "Component ",
+  title = "sMCA: factor scores of \nindividuals (rows)",
+  cex.mean.text = 2,
+  cex.mean.point = 2,
+  alpha.mean.point = 0.7,
+  digit4tau = 2)
+
+smca.fi.plot <- smca.fi$f.map$zeMap_background + smca.fi$CI + smca.fi$mean.map$zeMap_dots + smca.fi$mean.map$zeMap_text + smca.fi$label + theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+smca.fi.plot 
+
+# cp 3 & 4
+smca.fi34 <- PlotFactor(xaxis = 3, yaxis = 4,
+                        lambda = smca.res$eig,
+                        # tau = 100 * smca.res$eig/sum(mca.res$ExPosition.Data$pdq.uncor$Dv^2),
+                        tau = 100* smca.res$eig/sum(mca.res$ExPosition.Data$eigs),
+                        f = smca.res$fi,
+                        design = Demo$gender,
+                        col.list = col.list,
+                        label.axisName = "Component ",
+                        digit4tau = 2)
+
+smca.fi34$f.map$zeMap_background + smca.fi34$f.map$zeMap_dots + smca.fi34$CI + smca.fi34$mean.map$zeMap_dots + smca.fi34$mean.map$zeMap_text + smca.fi34$label
+
+# cp 1 & 3
+smca.fi13 <- PlotFactor(xaxis = 1, yaxis = 3,
+                        lambda = smca.res$eig,
+                        # tau = 100 * smca.res$eig/sum(mca.res$ExPosition.Data$pdq.uncor$Dv^2),
+                        tau = smca.res$eig/sum(mca.res$ExPosition.Data$eigs),
+                        f = smca.res$fi,
+                        design = Demo$gender,
+                        col.list = col.list,
+                        label.axisName = "Component ",
+                        digit4tau = 2)
+
+smca.fi13$f.map$zeMap_background + smca.fi13$f.map$zeMap_dots + smca.fi13$CI + smca.fi13$mean.map$zeMap_dots + smca.fi13$mean.map$zeMap_text + smca.fi13$label
+
+```
+
+### Items
+
+```{r plot sparse MCA items}
+# cp 1 & 2
+options(ggrepel.max.overlaps = 20)
+smca.fj <- PTCA4CATA::createFactorMap(smca.res$fj,
+                                      axis1 = 1, axis2 = 2,
+                                      col.points = col.lv$oc,
+                                      col.labels = col.lv$oc,
+                                      text.cex = 2, alpha.labels = 0.5,
+                                      cex = 1,force = 0.5,segment.size = 0.5,
+                                      col.background = NULL,
+                                      col.axes = "#42376B",
+                                      title = "sMCA: factor scores of \nvariable levels (columns)",
+                                      width.axes = 0.5,
+                                      alpha.axes = 0.5)
+smca.fjlines <- data4PCCAR::addLines4MCA(smca.res$fj, linetype = 5,alpha = 0.5,
+                                         col4Var = col.lv$gc)
+smca.fj$zeMap_background + smca.fj$zeMap_dots + smca.fj$zeMap_text + smca.fjlines
+smca.fj.plot <- smca.fj$zeMap_background + smca.fj$zeMap_dots + smca.fj$zeMap_text + smca.fjlines + smca.fi$label+ theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+smca.fj.plot
+
+# # cp 3 & 4
+# smca.fj34 <- PTCA4CATA::createFactorMap(smca.res$fj,
+#                                         axis1 = 3, axis2 = 4,
+#                                         col.points = col.lv$oc,
+#                                         col.labels = col.lv$oc,
+#                                         text.cex = 2, alpha.labels = 0.5,
+#                                         col.background = NULL,
+#                                         col.axes = "orchid4",
+#                                         label.axisName = "Component ",
+#                                         alpha.axes = 0.5)
+# smca.fj34lines <- data4PCCAR::addLines4MCA(smca.res$fj, linetype = 5,
+#                                            axis_h = 3, axis_v = 4,
+#                                            col4Var = col.lv$gc)
+# smca.fj34$zeMap_background + smca.fj34$zeMap_dots + smca.fj34$zeMap_text + smca.fj34lines  + smca.fi34$label
+# smca.fj34$zeMap_background + smca.fj34$zeMap_dots + smca.fj34lines + smca.fi34$label
+# 
+# # cp 1 & 3
+# smca.fj13 <- PTCA4CATA::createFactorMap(smca.res$fj,
+#                                         axis1 = 1, axis2 = 3,
+#                                         col.points = col.lv$oc,
+#                                         col.labels = col.lv$oc,
+#                                         text.cex = 2, alpha.labels = 0.5,
+#                                         col.background = NULL,
+#                                         col.axes = "orchid4",
+#                                         alpha.axes = 0.5)
+# smca.fj13lines <- data4PCCAR::addLines4MCA(smca.res$fj, linetype = 5,
+#                                            axis_h = 1, axis_v = 3,
+#                                            col4Var = col.lv$gc)
+# smca.fj13$zeMap_background + smca.fj13$zeMap_dots + smca.fj13$zeMap_text + smca.fj13lines  + smca.fi13$label
+# smca.fj13$zeMap_background + smca.fj13$zeMap_dots + smca.fj13lines + smca.fi13$label
+# 
+# # barplot
+# smca.fjbar1 <- PrettyBarPlot2(bootratio = smca.res$fj[,1],
+#                               threshold = 0,
+#                               color4bar = col.lv$oc)
+# 
+# smca.fjbar1 +
+#   geom_line(aes(x = IDnum, y = bootratio, group = as.vector(level.dx)), size = 1) 
+# 
+# smca.fjbar2 <- PrettyBarPlot2(bootratio = smca.res$fj[,2],
+#                               threshold = 0,
+#                               color4bar = col.lv$oc)
+# 
+# smca.fjbar2 +
+#   geom_line(aes(x = IDnum, y = bootratio, group = as.vector(level.dx)), size = 1) 
+# 
+# smca.fjbar3 <- PrettyBarPlot2(bootratio = smca.res$fj[,3],
+#                               threshold = 0,
+#                               color4bar = col.lv$oc)
+# 
+# smca.fjbar3 +
+#   geom_line(aes(x = IDnum, y = bootratio, group = as.vector(level.dx)), size = 1) 
+# 
+# smca.fjbar4 <- PrettyBarPlot2(bootratio = smca.res$fj[,4],
+#                               threshold = 0,
+#                               color4bar = col.lv$oc)
+# 
+# smca.fjbar4 +
+#   geom_line(aes(x = IDnum, y = bootratio, group = as.vector(level.dx)), size = 1) 
+
+
+```
+
+### Item contributions
+
+```{r plotsMCAitemsCtr, cache = TRUE}
+smca.var.cj <- t(level.indmat) %*% smca.res$cj[rownames(level.indmat),]
+
+# cp 1 & 2
+smca.cj <- createFactorMap(smca.var.cj,
+                           col.points = col.lv$gc,
+                           col.labels = col.lv$gc,
+                           col.background = NULL,
+                           col.axes = "orchid4",
+                           cex = 3,
+                           text.cex = 3)
+
+smca.cj$zeMap + smca.fi$label
+
+# cp 3 & 4
+smca.cj34 <- createFactorMap(smca.var.cj, axis1 = 3, axis2 = 4,
+                             col.points = col.lv$gc,
+                             col.labels = col.lv$gc,
+                             col.background = NULL,
+                             col.axes = "orchid4",
+                             cex = 3,
+                             text.cex = 3)
+
+smca.cj34$zeMap + smca.fi34$label
+
+# cp 1 & 3
+smca.cj13 <- createFactorMap(smca.var.cj, axis1 = 1, axis2 = 3,
+                             col.points = col.lv$gc,
+                             col.labels = col.lv$gc,
+                             col.background = NULL,
+                             col.axes = "orchid4",
+                             cex = 3,
+                             text.cex = 3)
+
+smca.cj13$zeMap + smca.fi13$label
+```
+
+### Lollipop plot
+
+```{r}
+plot.data <- matrix(nrow = nrow(mca.var.cj)) %>% data.frame
+plot.data$x <- plot.data$x2 <- plot.data$x3 <- plot.data$x4 <- c(1:nrow(mca.var.cj))
+plot.data$y <- -mca.var.cj[,1]
+plot.data$y2 <- -mca.var.cj[,2]
+plot.data$y3 <- -mca.var.cj[,3]
+plot.data$y4 <- -mca.var.cj[,4]
+
+plot.sdata <- matrix(nrow = nrow(smca.var.cj)) %>% data.frame
+plot.sdata$x <- plot.sdata$x2 <- plot.sdata$x3 <- plot.sdata$x4 <- c(1:nrow(smca.var.cj))
+plot.sdata$y <- smca.var.cj[,1]
+plot.sdata$y2 <- smca.var.cj[,2]
+plot.sdata$y3 <- smca.var.cj[,3]
+plot.sdata$y4 <- smca.var.cj[,4]
+
+## start lollipop
+dat <- rbind(plot.data, plot.sdata)
+dat$alpha <- (!near(dat$y, 0))+0.3
+dat$alpha2 <- (!near(dat$y2, 0))+0.3
+dat$alpha3 <- (!near(dat$y3, 0))+0.3
+dat$alpha4 <- (!near(dat$y4, 0))+0.3
+```
+
+```{r}
+lolli.cp1 <- ggplot(dat, aes(x=y, y=x, color = rep(col.dx, 2), alpha = I(alpha))) +
+  annotate("segment", x = -0.1, y = 1, xend = -0.1, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = -0.2, y = 1, xend = -0.2, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = -0.3, y = 1, xend = -0.3, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = -0.4, y = 1, xend = -0.4, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.1, y = 1, xend = 0.1, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.2, y = 1, xend = 0.2, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.3, y = 1, xend = 0.3, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.4, y = 1, xend = 0.4, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  geom_vline(xintercept = 0, color = "#42376B") +
+  geom_segment(aes(x = 0, xend = y, y = x, yend = x), colour = rep(col.idx.lv,2)) +
+  geom_point(aes(y = x), size=1, colour = rep(col.idx.lv,2)) +
+  coord_cartesian(ylim = c(1,46)) +
+  ggtitle("Component 1") +
+  labs(x = "Variable contributions", y = "") +
+  annotate("text", x = -0.25, y = 45, label = "~underline(bold('MCA'))", parse = TRUE, size = 3, color = "#42376B") +
+  annotate("text", x =  0.25, y = 45, label = "~underline(bold('sMCA'))", parse = TRUE, size = 3, color = "#42376B") + 
+  annotate("text", x = -0.2, y = 32, label = "bold('Interdependent')", parse = TRUE, size = 2.5, colour = col.idx[1], angle = 90) +
+  annotate("text", x = -0.2, y = 11, label = "bold('Independent')", parse = TRUE, size = 2.5, colour = col.idx[2], angle = 90) +
+  annotate("text", x = 0.15, y = 32, label = "bold('Interdependent')", parse = TRUE, size = 2.5, colour = col.idx[1], angle = 270, alpha = 0.3) +
+  annotate("text", x = 0.4, y = 11, label = "bold('Independent')", parse = TRUE, size = 2.5, colour = col.idx[2], angle = 270) +
+  xlim(-0.3,0.5) +
+  scale_x_continuous(labels = abs, breaks = c(-0.4, -0.2, 0, 0.2, 0.4)) +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.title = element_text(size = 8, color = "#42376B"), axis.text.x = element_text(size = 8, color = "#42376B"), 
+        axis.text.y = element_blank(), title = element_text(size = 8, color = "#42376B"), plot.title = element_text(hjust = 0.5))
+
+lolli.cp1
+```
+
+```{r}
+lolli.cp2 <- ggplot(dat, aes(x=y2, y=x2, color = rep(col.dx, 2), alpha = I(alpha2))) +
+  annotate("segment", x = -0.1, y = 1, xend = -0.1, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = -0.2, y = 1, xend = -0.2, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = -0.3, y = 1, xend = -0.3, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = -0.4, y = 1, xend = -0.4, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.1, y = 1, xend = 0.1, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.2, y = 1, xend = 0.2, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.3, y = 1, xend = 0.3, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  annotate("segment", x = 0.4, y = 1, xend = 0.4, yend = 42, linetype = 2, colour = "grey90", size = 0.5) +
+  geom_vline(xintercept = 0, color = "#42376B") +
+  geom_segment(aes(x = 0, xend = y2, y = x2, yend = x2), colour = rep(col.idx.lv,2)) +
+  geom_point(aes(y = x2), size=1, colour = rep(col.idx.lv,2)) +
+  coord_cartesian(ylim = c(1,46)) +
+  ggtitle("Component 2") +
+  labs(x = "Variable contributions", y = "") +
+  annotate("text", x = -0.25, y = 45, label = "~underline(bold('MCA'))", parse = TRUE, size = 3, color = "#42376B") +
+  annotate("text", x =  0.25, y = 45, label = "~underline(bold('sMCA'))", parse = TRUE, size = 3, color = "#42376B") + 
+  annotate("text", x = -0.2, y = 32, label = "bold('Interdependent')", parse = TRUE, size = 2.5, colour = col.idx[1], angle = 90) +
+  annotate("text", x = -0.2, y = 11, label = "bold('Independent')", parse = TRUE, size = 2.5, colour = col.idx[2], angle = 90) +
+  annotate("text", x = 0.4, y = 32, label = "bold('Interdependent')", parse = TRUE, size = 2.5, colour = col.idx[1], angle = 270) +
+  annotate("text", x = 0.15, y = 11, label = "bold('Independent')", parse = TRUE, size = 2.5, colour = col.idx[2], angle = 270, alpha = 0.3) +
+  xlim(-0.3,0.5) +
+  scale_x_continuous(labels = abs, breaks = c(-0.4, -0.2, 0, 0.2, 0.4)) +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.title = element_text(size = 8, color = "#42376B"), axis.text.x = element_text(size = 8, color = "#42376B"), 
+        axis.text.y = element_blank(), title = element_text(size = 8, color = "#42376B"),plot.title = element_text(hjust = 0.5))
+
+lolli.cp2
+
+# ggplot(dat, aes(x=y3, y=x3, color = rep(col.dx, 2), alpha = I(alpha3))) +
+#   geom_vline(xintercept = 0) +
+#   geom_segment(aes(x = 0, xend = y3, y = x3, yend = x3), colour = rep(col.idx.lv,2)) +
+#   geom_point(aes(y = x3), size=3, colour = rep(col.idx.lv,2)) +
+#   scale_x_continuous(labels = function(x) abs(x)) +
+#   xlim(-0.25,0.25) +
+#   theme_minimal() +
+#   theme(panel.grid.major.y = element_blank()) +
+#   labs(x = "")
+# 
+# ggplot(dat, aes(x=y4, y=x4, color = rep(col.dx, 2), alpha = I(alpha4))) +
+#   geom_vline(xintercept = 0) +
+#   geom_segment(aes(x = 0, xend = y4, y = x4, yend = x4), colour = rep(col.idx.lv,2)) +
+#   geom_point(aes(y = x4), size=3, colour = rep(col.idx.lv,2)) +
+#   scale_x_continuous(labels = function(x) abs(x)) +
+#   xlim(-0.25,0.25) +
+#   theme_minimal() +
+#   theme(panel.grid.major.y = element_blank()) +
+#   labs(x = "")
+```
+
+
+
+
+## Figure
+
+```{r}
+scree.plot <- scree.plot %>%
+  arrangeGrob(top = textGrob(expression(bold("A")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+si.line <- si.line %>%
+  arrangeGrob(top = textGrob(expression(bold("B")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+siplot <- siplot %>%
+  arrangeGrob(top = textGrob(expression(bold("C")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+mca.fj.plot <- mca.fj.plot %>%
+  arrangeGrob(top = textGrob(expression(bold("D")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+mca.fi.plot <- mca.fi.plot %>%
+  arrangeGrob(top = textGrob(expression(bold("E")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+lolli.cp1 <- lolli.cp1 %>%
+  arrangeGrob(top = textGrob(expression(bold("F")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+lolli.cp2 <- lolli.cp2 %>%
+  arrangeGrob(top = textGrob(expression(bold("G")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+smca.fj.plot <- smca.fj.plot%>%
+  arrangeGrob(top = textGrob(expression(bold("H")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+smca.fi.plot <- smca.fi.plot %>%
+  arrangeGrob(top = textGrob(expression(bold("I")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+```
+
+
+```{r}
+# png(filename="Figure-SMCA_20220915_tikz.png", width = 170, height = 200, units = "mm", bg = "white",res = 600)
+MCAplot <- gridExtra::grid.arrange(grobs = list(scree.plot, si.line, siplot, 
+                                     mca.fj.plot, smca.fj.plot, lolli.cp1, lolli.cp2,
+                                     mca.fi.plot, smca.fi.plot),
+                        widths = c(0.35, 0.15,0.15, 0.35),
+                        heights = c(0.26,0.37,0.37),
+                        layout_matrix = rbind(c(1,2,2,3),
+                                              c(4,6,6,5),
+                                              # c(3,5,5,4),
+                                              # c(7,6,6,8),
+                                              c(8,7,7,9))
+)
+# dev.off()
+
+tf <- "Figure-SMCA_20220915_tikz.tex"
+tikz(tf, standAlone = TRUE, width = 6.69, height = 7.87, bg = "white")
+grid.newpage()
+grid.draw(MCAplot)
+dev.off()
+
+# View the output
+tools::texi2dvi(tf, pdf = TRUE)
+# system(paste(getOption('pdfviewer'), "Figure-SMCA_20220915_tikz.pdf"))
+```
+

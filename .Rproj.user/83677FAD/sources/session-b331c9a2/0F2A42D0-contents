@@ -1,0 +1,520 @@
+---
+title: "Applying Sparse CA to the Cause of Death Dataset"
+author: "Ju-Chi Yu & Vincent Guillemot"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  rmdformats::downcute:
+    highlight: kate
+    df_print: paged
+    code_folding: hide
+  pdf_document: default
+always_allow_html: true
+knit: (function(inputFile, encoding) { 
+          rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file='sparseMCA_20210712.html') })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+# devtools::load_all("../../../../Abdi_lab/Colaborations/Rpackages/sGSVD")
+# devtools::load_all("../../../../Abdi_lab/Colaborations/Rpackages/SPAFAC")
+library(ExPosition)
+library(FactoMineR)
+library(ggplot2)
+library(ggrepel)
+library(magrittr)
+library(sGSVD)
+library(SPAFAC)
+library(superheat)
+library(PTCA4CATA)
+library(tidyverse)
+library(data4PCCAR)
+library(inlmisc)
+library(pheatmap)
+# Libraries for the little hat
+library(grid)
+library(gridExtra)
+library(tikzDevice)
+
+
+# source("../functions/PlotFactor.R")
+source("../functions/plot.sca.results.R")
+# source("../functions/createxyLabels.gen.digit.R")
+# source("../functions/createLabel.gen.digit.R")
+source("../functions/plot.smca.results.R")
+source("../functions/createxyLabels.gen.tikz.R")
+source("../functions/PlotMyScreeTikz.R")
+
+text_size <- 8
+```
+
+# Data
+
+```{r read}
+# read data =================
+data.dir <- ("../../01_data/")
+load(paste0(data.dir, "death.2019.rda"))
+death.2019 <- t(as.matrix(death.2019))
+I <- nrow(death.2019)
+J <- ncol(death.2019)
+```
+
+## Heatmap of the disjunctive coded data.
+
+```{r heatmap01, fig.height=7, fig.width=7}
+death.burt <- t(death.2019) %*% death.2019
+death.phi <- data4PCCAR::phi2Mat4BurtTable(death.2019)$phi2.mat
+
+pheatmap(log10(death.2019 + 1), cluster_rows = FALSE, cluster_cols = TRUE, border_color = "white", color = colorRampPalette(c("white", "orchid3", "mediumorchid4"))(50))
+```
+
+
+# CA {.tabset}
+
+```{r epCa, cache = TRUE}
+ca.res <- epCA(death.2019, k = 19, graphs = FALSE)
+```
+
+## Labels for dimensions 1 and 2
+
+```{r nice labels}
+labels12 <- createxyLabels.gen(
+  1, 2,
+  lambda = ca.res$ExPosition.Data$eigs,
+  tau = round(ca.res$ExPosition.Data$t),
+  axisName = "Component "
+)
+
+```
+
+
+## Age categories
+
+```{r plotCAagecat, cache = TRUE}
+ca.fi.map <- createFactorMap(X = ca.res$ExPosition.Data$fi,
+                       col.points = "#E08214", 
+                       col.labels = "#E08214",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "CA: row factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 1,
+                       axis2 = 2,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+ca.fi.plot <- ca.fi.map$zeMap_background + ca.fi.map$zeMap_dots + ca.fi.map$zeMap_text + ca.fi.map$label + geom_path(color = "#E08214") + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+```
+
+
+## Causes of death
+
+```{r plotMCAcauseOfdeath, cache = TRUE}
+ca.fj.map <- createFactorMap(X = ca.res$ExPosition.Data$fj,
+                       col.points = "#2166AC", 
+                       col.labels = "#2166AC",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "CA: column factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 1,
+                       axis2 = 2,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+ca.fj.plot <- ca.fj.map$zeMap_background + ca.fj.map$zeMap_dots + ca.fj.map$zeMap_text + ca.fj.map$label + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+```
+
+# sparse CA 
+
+## Fixed sparse parameters {.tabset}
+
+```{r sparse CA, cache = TRUE}
+dim2get <- 8L
+rdsleft <- rep(2.319896, dim2get)
+rdsright <- rep(1.353568, dim2get) #0.5994068 
+
+sca.res <- sparseCA(
+  death.2019,
+  components = dim2get,
+  rdsLeft = rdsleft,
+  rdsRight = rdsright
+)
+```
+
+```{r sca.scree}
+sca.eig <- data.frame(
+  eig = sca.res$eig, 
+  tau = 100 * sca.res$eig / sum(ca.res$ExPosition.Data$eigs))
+
+scree.plot <- PlotMyScreeTikz(sca.eig, cex = 2, text.cex = 8, lwd = 0.5, color.sig =  rep(c("#42376B", "grey70"), c(2, 6)))+ theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, fill = NA, color = "#42376B"))
+scree.plot
+```
+
+### Age categories
+
+```{r plot sparse CA age categories, cache = TRUE}
+sca.fi.map.12 <- createFactorMap(X = sca.res$fi,
+                       col.points = "#E08214", 
+                       col.labels = "#E08214",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: row factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 1,
+                       axis2 = 2,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fi.plot.12 <- sca.fi.map.12$zeMap_background + sca.fi.map.12$zeMap_dots + sca.fi.map.12$zeMap_text + sca.fi.map.12$label + geom_path(color = "#E08214") + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fi.plot.12
+
+# cp 3 & 4
+sca.fi.map.34 <- createFactorMap(X = sca.res$fi,
+                       col.points = "#E08214", 
+                       col.labels = "#E08214",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: row factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 3,
+                       axis2 = 4,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fi.plot.34 <- sca.fi.map.34$zeMap_background + sca.fi.map.34$zeMap_dots + sca.fi.map.34$zeMap_text + sca.fi.map.34$label + geom_path(color = "#E08214") + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fi.plot.34
+```
+
+### Causes of death
+
+```{r plot sparse CA causes of death}
+sca.fj.map.12 <- createFactorMap(X = sca.res$fj,
+                       col.points = "#2166AC", 
+                       col.labels = "#2166AC",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: column factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 1,
+                       axis2 = 2,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fj.plot.12 <- sca.fj.map.12$zeMap_background + sca.fj.map.12$zeMap_dots + sca.fj.map.12$zeMap_text + sca.fj.map.12$label + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fj.plot.12
+
+# cp 3 & 4
+sca.fj.map.34 <- createFactorMap(X = sca.res$fj,
+                       col.points = "#2166AC", 
+                       col.labels = "#2166AC",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: column factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 3,
+                       axis2 = 4,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fj.plot.34 <- sca.fj.map.34$zeMap_background + sca.fj.map.34$zeMap_dots + sca.fj.map.34$zeMap_text + sca.fj.map.34$label + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fj.plot.34
+```
+
+## Sparsity Index {.tabset}
+
+```{r allparz, cache = TRUE}
+K <- 8L
+
+parz <- expand.grid(
+  rdsleft = seq(sqrt(I), 1, length = 20),
+  rdsright = seq(sqrt(J), 1, length = 20))
+
+parz <- parz[order(rowSums(parz^2/c(I,J)), decreasing = T), ]
+
+iter <- 1
+res.sca.list <- NULL
+
+for (rds.iter in 1:nrow(parz)) {
+  cat(sprintf("Left radius: %0.2f - Right radius: %0.2f\n", parz[rds.iter, 1], parz[rds.iter, 2]))
+  res.sca.list[[iter]] <- tryCatch(
+    sparseCA(DATA = death.2019, 
+             components = K, 
+             rdsLeft = rep(parz[rds.iter, 1], K), 
+             rdsRight = rep(parz[rds.iter, 2], K)), error = function(e) NA
+    )
+  iter <- iter + 1
+}
+
+```
+
+### Compute sparsity Index
+
+We use Trendavilov's sparsity index: 
+
+\begin{align}
+  \text{SI} & =  \rone  \rfour
+\end{align}
+where
+\[
+   \rone = \frac{\displaystyle \sum_{\ell=1}^R \hat\delta_\ell^2(s_1, s_2)}{\displaystyle \sum_{\ell=1}^R \delta_\ell^2}
+\]
+
+```{r function}
+extract_si <- function(sca, si = "SI") {
+  if (class(sca) == "list") {
+    return(sca$sparsity$SI[[si]])
+  } else if (is.na(sca)) {
+    return(NA)
+  } else {
+    stop("Something is a foot!")
+  }
+}
+
+pivot_the_tab <- function(dat) {
+  df <- data.frame(V = unname(t(data.frame(dat))))
+  df %>% 
+    tidyr::pivot_longer(starts_with("V"), names_to = "k", names_prefix = "V\\.") %>%
+    select(value) %>% purrr::as_vector() %>% unname()
+}
+```
+
+
+```{r SI}
+dat.si <- data.frame(
+  parz = unname(parz), 
+  SI = unname(t(sapply(res.sca.list, extract_si, "SI"))),
+  fit = unname(t(sapply(res.sca.list, extract_si, "r1"))),
+  zeros = unname(t(sapply(res.sca.list, extract_si, "r4"))))
+
+dat.fit.zeros <- dat.si %>% 
+  tidyr::pivot_longer(
+    -c(parz.1, parz.2),
+    names_to = c(".value", "k"),
+    names_pattern = "(.*)\\.(.*)")
+
+theta <- seq(pi, 3/2*pi, length.out = 150)
+
+```
+
+
+### Draw figures of fit
+
+```{r fitzeroratioplot}
+# dimcol <- Polychrome::glasbey.colors(n = 16)[-c(1, 5)]
+# dimcol <- RColorBrewer::brewer.pal(n = 4, name = "Set2")
+# dimcol <- inlmisc::GetColors(n = 8, scheme = "discrete rainbow", reverse = TRUE)
+# dimcol <- ggthemes::tableau_color_pal(palette = "Color blind")(10)
+# dimcol <- c("#EE9A00", "#436EEE", "#A2CD5A", "#EEAEEE")
+dimcol <- inlmisc::GetColors(n = 8, scheme = "discrete rainbow", reverse = TRUE)[c(1, 3, 5, 7)]
+names(dimcol) <- 2:5
+# Polychrome::swatch(dimcol)
+
+dat.fit.zeros %<>% 
+  filter(k %in% c("2", "3", "4", "5")) %>%
+  mutate(alpha = ifelse(SI == max(SI), 1, 0.2))
+
+siplot <- dat.fit.zeros %>%
+  ggplot(aes(zeros, fit)) + 
+  geom_hline(yintercept = 1, color = "#42376B", alpha = 0.6, linetype = 3) + 
+  geom_vline(xintercept = 1, color = "#42376B", alpha = 0.6, linetype = 3) + 
+  lapply(seq(0.25, 1.25, by = 0.25), 
+         function(r) annotate("path",
+                              x = 1 + r*cos(theta),
+                              y = 1 + r*sin(theta),
+                              color = "#42376B")) + 
+  lapply(seq(0.125, 1.5, by = 0.25), 
+         function(r) annotate("path",
+                              x = 1 + r*cos(theta),
+                              y = 1 + r*sin(theta),
+                              color = "#42376B", size = 0.2))  +
+  geom_abline(intercept = 0, slope = 1, color = "#42376B", 
+              alpha = 0.6, linetype = 3) +
+  geom_point(aes(color = k, alpha = I(alpha))) +
+  scale_color_manual(values = dimcol) +
+  theme_bw() + 
+  coord_equal(xlim = 0:1, ylim = 0:1) +
+  guides(fill = "none", size = "none") +
+  labs(x = "Zero ratio", y = "Fit ratio", color = "Number of\nDimensions",
+       size = "Sparsity\nIndex", fill = "Number of\nDimensions") + 
+  theme(
+    # axis.title = element_text(color = "#42376B"),
+    # axis.text = element_text(color = "#42376B"),
+    # title = element_text(color = "#42376B"),
+    axis.title = element_text(size = text_size, color = "#42376B"),
+    axis.text = element_text(size = text_size, color = "#42376B"),
+    title = element_text(size = text_size, color = "#42376B"),
+    panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA),
+    plot.margin = unit(c(0.1,0,0,0), unit = "cm"),
+    panel.grid = element_blank(),
+    legend.key.size = unit(0.1, "cm"),
+    legend.text = element_text(size = 6),
+    legend.position = "right",
+    legend.spacing.x = unit(0.05, "cm"),
+    legend.margin = margin(0,0,0,0),
+    legend.box.margin = margin(-5,0,0,0),
+    legend.title.align = 0,
+    legend.title = element_text(size = 6)) +
+  with(dat.fit.zeros[which.max(dat.fit.zeros$SI),], 
+       annotate(geom = "point", x = zeros, y = fit,
+                color = "darkorchid4", shape = 21, fill = NA)) +
+  with(dat.fit.zeros[which.max(dat.fit.zeros$SI),], 
+       annotate(geom = "segment", 
+                x = zeros + 0.15, y = fit + 0.2,
+                xend = zeros + 0.02, yend = fit + 0.02, 
+                arrow = arrow(length = unit(0.05, "inches"), type = "closed"),
+                color = "darkorchid4", size = .6)) +
+  with(dat.fit.zeros[which.max(dat.fit.zeros$SI),], 
+       annotate(geom = "label", x = zeros + 0.16, y = fit + 0.2, 
+                color = "darkorchid4", label = substring(sprintf("%.3f", SI), 2), 
+                fill = scales::alpha(colorspace::lighten(dimcol["2"], .6), 1), 
+                size = 2.5))
+
+siplot
+
+```
+
+### Optimal sparsity
+
+```{r}
+dat.fit.zeros.minus1 <- dat.fit.zeros %>% filter(k > 1)
+kopt <- as.integer(dat.fit.zeros.minus1$k[which.max(dat.fit.zeros.minus1$SI)])
+rdsleftopt <- dat.fit.zeros.minus1$parz.1[which.max(dat.fit.zeros.minus1$SI)]
+rdsrightopt <- dat.fit.zeros.minus1$parz.2[which.max(dat.fit.zeros.minus1$SI)]
+SIopt <- max(dat.fit.zeros.minus1$SI, na.rm = TRUE)
+
+kopt;rdsleftopt/sqrt(I);rdsrightopt/sqrt(J);SIopt
+```
+
+
+## Figure
+
+```{r new version}
+
+# Add TIKZ labels
+labels12 <- createxyLabels.gen.tikz(
+  1, 2,
+  lambda = ca.res$ExPosition.Data$eigs,
+  tau = round(ca.res$ExPosition.Data$t),
+  axisName = "Component "
+)
+
+ca.fi.plot <- ca.fi.plot + labels12
+ca.fj.plot <- ca.fj.plot + labels12
+
+labels12.sparse <- createxyLabels.gen.tikz(
+  1, 2,
+  lambda = sca.res$eig,
+  tau = 100 * sca.res$eig / sum(ca.res$ExPosition.Data$eigs),
+  axisName = "Component ", 
+  hat = TRUE
+)
+
+sca.fi.plot.12 <- sca.fi.plot.12 + labels12.sparse
+sca.fj.plot.12 <- sca.fj.plot.12 + labels12.sparse
+
+### Put ABC labels
+scree.grob <- arrangeGrob(scree.plot,
+    top = textGrob(
+      expression(bold("A")),
+      x = unit(0, "npc"),
+      y = unit(1, "npc"), 
+      just = c("left", "top")))
+
+sigrob <- arrangeGrob(siplot,
+    top = textGrob(
+      expression(bold("B")),
+      x = unit(0, "npc"),
+      y = unit(1, "npc"), 
+      just = c("left", "top")))
+
+ca.fi.grob <- arrangeGrob(ca.fi.plot,
+    top = textGrob(
+      expression(bold("C")),
+      x = unit(0, "npc"),
+      y = unit(1, "npc"), 
+      just = c("left", "top")))
+
+sca.fi.grob.12 <- arrangeGrob(sca.fi.plot.12,
+    top = textGrob(
+      expression(bold("D")),
+      x = unit(0, "npc"),
+      y = unit(1, "npc"), 
+      just = c("left", "top")))
+
+ca.fj.grob <- arrangeGrob(ca.fj.plot,
+    top = textGrob(
+      expression(bold("E")),
+      x = unit(0, "npc"),
+      y = unit(1, "npc"), 
+      just = c("left", "top")))
+
+sca.fj.grob.12 <- arrangeGrob(sca.fj.plot.12,
+    top = textGrob(
+      expression(bold("F")),
+      x = unit(0, "npc"),
+      y = unit(1, "npc"), 
+      just = c("left", "top")))
+
+
+bigGrob <- gridExtra::grid.arrange(
+  grobs = list(scree.grob, sigrob, 
+               ca.fi.grob, sca.fi.grob.12,
+               ca.fj.grob, sca.fj.grob.12),
+  widths = c(0.3, 0.3),
+  heights = c(0.3, 0.3, 0.3),
+  layout_matrix = rbind(c(1,2),
+                        c(3,4),
+                        c(5,6)))
+tf <- "FigureSCA_20220915.tex"
+
+# Save a TeX file
+tikz(tf, standAlone = TRUE)
+grid.newpage()
+grid.draw(bigGrob)
+dev.off()
+
+# View the output
+tools::texi2dvi(tf, pdf = TRUE)
+system(paste(getOption('pdfviewer'), "FigureSCA_20220915.pdf"))
+
+```
+
+
+
+```{r old ersion, eval = FALSE}
+png(filename="FigureSCA_20220816.png", 
+    width = 170, height = 140, units = "mm",
+    bg = "white", res = 600)
+gridExtra::grid.arrange(grobs = list(scree.plot, siplot, 
+                                     ca.fi.plot, sca.fi.plot.12,
+                                     ca.fj.plot, sca.fj.plot.12),
+                        widths = c(0.3, 0.3),
+                        heights = c(0.3, 0.3, 0.3),
+                        layout_matrix = rbind(c(1,2),
+                                              c(3,4),
+                                              c(5,6))
+)
+dev.off()
+
+
+```
+
