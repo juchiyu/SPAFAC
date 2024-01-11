@@ -1,3 +1,7 @@
-## code to prepare `example4` dataset goes here
+## code to prepare `example4_sDiMCA` dataset goes here
 
-usethis::use_data(example4, overwrite = TRUE)
+macs <- readxl::read_excel("MACS-SpaFac-Data.xlsx")
+
+example4_sDiMCA <- macs
+
+usethis::use_data(example4_sDiMCA, overwrite = TRUE)
