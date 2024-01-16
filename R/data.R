@@ -1,4 +1,4 @@
-#' Cause of death data
+#' Causes of death in the US in 2019
 #'
 #' The example for sparse CA
 #'
@@ -17,7 +17,7 @@
 #'
 #' The example for sparse DiCA
 #'
-#' @format ## `example2_sDiCA`
+#' @format ## `example2_sDiSCA`
 #' A data frame
 #' \describe{
 #'   \item{country}{Country name}
@@ -26,7 +26,7 @@
 #'   ...
 #' }
 #' @source
-"example2_sDiCA"
+"example2_sDiSCA"
 
 #' Questionnaire Data
 #'
