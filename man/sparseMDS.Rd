@@ -24,12 +24,45 @@ sparseMDS(
 )
 }
 \arguments{
-\item{masses}{a vector of masses for the rows/columns. Default is set to "NULL" with equal masses of 1/(the number of rows) being used.}
+\item{DATA}{The data matrix for MDS analysis.}
 
-\item{method}{"distance" or "covariance"}
+\item{masses}{A vector of masses for the rows/columns; defaults to NULL with equal masses of 1/(number of rows).}
 
-\item{OrthSpace}{}
+\item{components}{The number of dimensions for the analysis; defaults to 0.}
+
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
+
+\item{method}{Method for analysis, either "distance" or "covariance".}
+
+\item{init}{Initialization method; defaults to "svd".}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rds}{Radii for the analysis; defaults to rep(1, components).}
+
+\item{orthogonality}{Type of orthogonality constraint; defaults to "loadings".}
+
+\item{OrthSpace}{Orthogonal space for the analysis; defaults to NULL.}
+
+\item{projPriority}{Priority of the projection; defaults to "orth".}
+
+\item{itermaxALS}{Maximum number of ALS iterations; defaults to 1000.}
+
+\item{itermaxPOCS}{Maximum number of POCS iterations; defaults to 1000.}
+
+\item{epsALS}{Convergence criterion for ALS; defaults to 1e-10.}
+
+\item{epsPOCS}{Convergence criterion for POCS; defaults to 1e-10.}
+}
+\value{
+Returns an object containing the results of the sparse MDS analysis, including eigenvalues, eigenvectors, and various metrics relevant to the analysis.
 }
 \description{
-Sparse Multidimensional Scaling
+Performs sparse multidimensional scaling (MDS) on a given data matrix.
+}
+\examples{
+# Example usage of sparseMDS function
+# Assuming `data` is a data matrix
+#' \dontrun{result <- sparseMDS(DATA = data)}
+
 }

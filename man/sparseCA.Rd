@@ -30,12 +30,64 @@ sparseCA(
 )
 }
 \arguments{
-\item{DATA}{the contingency table}
+\item{DATA}{The contingency table for analysis.}
 
-\item{epsPOCS}{}
+\item{components}{The number of dimensions for the analysis; defaults to 0.}
 
-\item{k}{the number of dimensions}
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
+
+\item{doublecentering}{Logical indicating whether double centering should be applied; defaults to TRUE.}
+
+\item{init}{Method for initialization; defaults to "svd".}
+
+\item{initLeft}{Initial values for the left side; defaults to NULL.}
+
+\item{initRight}{Initial values for the right side; defaults to NULL.}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rdsLeft}{Radii for the left side; defaults to rep(1, components).}
+
+\item{rdsRight}{Radii for the right side; defaults to rep(1, components).}
+
+\item{grpLeft}{Group assignments for the left side; defaults to NULL.}
+
+\item{grpRight}{Group assignments for the right side; defaults to NULL.}
+
+\item{orthogonality}{Type of orthogonality constraint; defaults to "loadings".}
+
+\item{OrthSpaceLeft}{Orthogonal space for the left side; defaults to NULL.}
+
+\item{OrthSpaceRight}{Orthogonal space for the right side; defaults to NULL.}
+
+\item{projPriority}{Priority of the projection; defaults to "orth".}
+
+\item{projPriorityLeft}{Priority of the left projection; defaults to projPriority.}
+
+\item{projPriorityRight}{Priority of the right projection; defaults to projPriority.}
+
+\item{itermaxALS}{Maximum number of ALS iterations; defaults to 1000.}
+
+\item{itermaxPOCS}{Maximum number of POCS iterations; defaults to 1000.}
+
+\item{epsALS}{Convergence criterion for ALS; defaults to 1e-10.}
+
+\item{epsPOCS}{Convergence criterion for POCS; defaults to 1e-10.}
+}
+\value{
+Returns an object of class c("sSVD", "sGSVD", "list") containing the results
+of the group sparse correspondence analysis. This object includes various components
+produced by the sparse generalized singular value decomposition (sparseGSVD) and
+the subsequent \code{spafac.out} processing. Key components include the singular values,
+left and right singular vectors, and additional metrics relevant to the analysis.
+The object also contains \code{X.preproc}, the preprocessed data matrix used in the analysis.
 }
 \description{
 Group sparse Correspondence Analysis
+}
+\examples{
+
+data("example1_sCA") # Load the Cause of Deaths Data
+sca.res <- sparseCA(as.matrix(example1_sCA), components = 2L, rdsLeft = c(1.3, 1.3), rdsRight = c(2.3, 2.3))
+
 }

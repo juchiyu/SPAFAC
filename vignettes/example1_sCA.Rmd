@@ -1,0 +1,175 @@
+---
+title: "Example 1: Sparse Correspondence Analysis of the Causes of Death in the US in 2019"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example 1: Sparse Correspondence Analysis of the Causes of Death in the US in 2019}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Setup
+
+```{r}
+library(ggplot2)
+```
+
+We begin by loading the `SPAFAC` package and the data.
+
+```{r load}
+library(sGSVD)
+library(SPAFAC)
+library(PTCA4CATA)
+data("example1_sCA")
+
+death.2019 <- t(as.matrix(example1_sCA))
+I <- nrow(death.2019)
+J <- ncol(death.2019)
+
+```
+
+
+
+
+
+```{r}
+death.burt <- t(death.2019) %*% death.2019
+death.phi <- data4PCCAR::phi2Mat4BurtTable(death.2019)$phi2.mat
+
+pheatmap::pheatmap(log10(death.2019 + 1), cluster_rows = FALSE, cluster_cols = TRUE, border_color = "white", color = colorRampPalette(c("white", "orchid3", "mediumorchid4"))(50))
+```
+
+
+# sparse CA 
+
+## Fixed sparse parameters {.tabset}
+
+```{r sparse CA}
+text_size <- 8
+dim2get <- 4L
+rdsleft <- rep(2.319896, dim2get)
+rdsright <- rep(1.353568, dim2get) #0.5994068 
+
+ca.res <- ExPosition::epCA(death.2019, k = 19, graphs = FALSE)
+
+sca.res <- sparseCA(
+  death.2019,
+  components = dim2get,
+  rdsLeft = rdsleft,
+  rdsRight = rdsright
+)
+```
+
+```{r sca.scree}
+sca.eig <- data.frame(
+  eig = sca.res$eig, 
+  tau = 100 * sca.res$eig / sum(ca.res$ExPosition.Data$eigs))
+
+color.sig =  "#42376B" ;color.ns = "grey60"; cex = 1.1; text.cex = 10; lwd = 1
+scree.plot <-   sca.eig |>
+  ggplot(aes(x = 1:length(eig), y = tau)) +
+    geom_line(color = "grey40", size = lwd) +
+    geom_point(color = color.sig, size = cex) +
+    # geom_hline(yintercept = 1, linetype = "dashed", color = "darkgreen", size = lwd) +
+    scale_y_continuous(name = bquote(atop(bold(.(title)),paste('\n\n    Percentage of \nvariance explained (%)'))),
+                       sec.axis = sec_axis(~.*(sca.eig$eig[1]/sca.eig$tau[1]), name = "Pseudo-eigenvalues")) +
+    xlab("Components") +
+    scale_x_continuous(breaks=c(1:9)) +
+    theme(text = element_text(size = text.cex),
+          legend.position = "none",
+          axis.text.y.left = element_text(angle = 90),
+          axis.text.y.right = element_text(angle = 270),
+          panel.background = element_rect(fill = "transparent"),
+          panel.border = element_rect(color = "black", fill = "transparent"))
+
+scree.plot
+```
+
+### Age categories
+
+```{r plot sparse CA age categories, cache = TRUE}
+sca.fi.map.12 <- createFactorMap(X = sca.res$fi,
+                       col.points = "#E08214", 
+                       col.labels = "#E08214",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: row factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 1,
+                       axis2 = 2,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fi.plot.12 <- sca.fi.map.12$zeMap_background + sca.fi.map.12$zeMap_dots + sca.fi.map.12$zeMap_text + sca.fi.map.12$label + geom_path(color = "#E08214") + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fi.plot.12
+
+# cp 3 & 4
+sca.fi.map.34 <- createFactorMap(X = sca.res$fi,
+                       col.points = "#E08214", 
+                       col.labels = "#E08214",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: row factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 3,
+                       axis2 = 4,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fi.plot.34 <- sca.fi.map.34$zeMap_background + sca.fi.map.34$zeMap_dots + sca.fi.map.34$zeMap_text + sca.fi.map.34$label + geom_path(color = "#E08214") + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fi.plot.34
+```
+
+### Causes of death
+
+```{r plot sparse CA causes of death}
+sca.fj.map.12 <- createFactorMap(X = sca.res$fj,
+                       col.points = "#2166AC", 
+                       col.labels = "#2166AC",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: column factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 1,
+                       axis2 = 2,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fj.plot.12 <- sca.fj.map.12$zeMap_background + sca.fj.map.12$zeMap_dots + sca.fj.map.12$zeMap_text + sca.fj.map.12$label + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fj.plot.12
+
+# cp 3 & 4
+sca.fj.map.34 <- createFactorMap(X = sca.res$fj,
+                       col.points = "#2166AC", 
+                       col.labels = "#2166AC",
+                       col.background = NULL,
+                       col.axes = "#42376B", width.axes = 0.5,
+                       title = "sCA: column factor scores",
+                       alpha.axes = 0.5,
+                       alpha.points = 0.5,
+                       pch = 16,
+                       axis1 = 3,
+                       axis2 = 4,
+                       constraints = NULL, 
+                       text.cex = 2)
+
+sca.fj.plot.34 <- sca.fj.map.34$zeMap_background + sca.fj.map.34$zeMap_dots + sca.fj.map.34$zeMap_text + sca.fj.map.34$label + theme(axis.title = element_text(size = text_size, color = "#42376B"), axis.text = element_text(size = text_size, color = "#42376B"), title = element_text(size = text_size, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+sca.fj.plot.34
+```
+

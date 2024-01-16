@@ -1,38 +1,44 @@
-#' sparse Partial Least Square Correlation
+#' Sparse Partial Least Square Correlation
 #'
-#' @param X Data matrix with \emph{I} rows and \emph{J} columns
-#' @param Y Data matrix with \emph{I} rows and \emph{K} columns
-#' @param components the number of dimensions to extract
-#' @param center_X For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
-#' @param center_Y For the \code{Y} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{Y}.
-#' @param scale_X For the \code{X} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
-#' @param scale_Y For the \code{Y} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{Y}.
-#' @param tol default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).
-#' @param init
-#' @param initLeft
-#' @param initRight
-#' @param seed
-#' @param rdsLeft
-#' @param rdsRight
-#' @param grpLeft
-#' @param grpRight
-#' @param orthogonality
-#' @param OrthSpaceLeft
-#' @param OrthSpaceRight
-#' @param projPriority
-#' @param projPriorityLeft
-#' @param projPriorityRight
-#' @param itermaxALS
-#' @param itermaxPOCS
-#' @param epsALS
-#' @param epsPOCS
+#' Performs sparse partial least square correlation analysis on two data matrices.
 #'
-#' @return
+#' @param X Data matrix with I rows and J columns.
+#' @param Y Data matrix with I rows and K columns.
+#' @param components The number of dimensions to extract; defaults to 0.
+#' @param center_X Logical or numeric vector for centering each column of X; passed to \code{\link{scale}}.
+#' @param center_Y Logical or numeric vector for centering each column of Y; passed to \code{\link{scale}}.
+#' @param scale_X Logical or numeric vector for scaling each column of X; passed to \code{\link{scale}}.
+#' @param scale_Y Logical or numeric vector for scaling each column of Y; passed to \code{\link{scale}}.
+#' @param tol Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.
+#' @param init Initialization method; defaults to "svd".
+#' @param initLeft Initial values for the left side; defaults to NULL.
+#' @param initRight Initial values for the right side; defaults to NULL.
+#' @param seed Seed for random number generation; defaults to NULL.
+#' @param rdsLeft Radii for the left side; defaults to rep(1, components).
+#' @param rdsRight Radii for the right side; defaults to rep(1, components).
+#' @param grpLeft Grouping vector for the left side; defaults to NULL.
+#' @param grpRight Grouping vector for the right side; defaults to NULL.
+#' @param orthogonality Type of orthogonality constraint; defaults to "both".
+#' @param OrthSpaceLeft Orthogonal space for the left side; defaults to NULL.
+#' @param OrthSpaceRight Orthogonal space for the right side; defaults to NULL.
+#' @param projPriority Priority of the projection; defaults to "orth".
+#' @param projPriorityLeft Priority of the left projection; defaults to projPriority.
+#' @param projPriorityRight Priority of the right projection; defaults to projPriority.
+#' @param itermaxALS Maximum number of ALS iterations; defaults to 1000.
+#' @param itermaxPOCS Maximum number of POCS iterations; defaults to 1000.
+#' @param epsALS Convergence criterion for ALS; defaults to 1e-10.
+#' @param epsPOCS Convergence criterion for POCS; defaults to 1e-10.
+#'
+#' @return Returns an object containing the results of the sparse partial least square correlation analysis. This object includes results from the sparse generalized singular value decomposition (sparseGSVD) applied to X and Y, and additional data specific to the analysis.
+#'
 #' @export
 #'
 #' @source Some arguments of the function are inspired by the GPLS package by Derek Beaton.
 #' @examples
-
+#' # Example usage of sparsePLSC function
+#' # Assuming `X` and `Y` are data matrices
+#' \dontrun{result <- sparsePLSC(X = X, Y = Y)}
+#'
 sparsePLSC <- function(X, Y, components = 0,
                        center_X = TRUE, center_Y = TRUE,
                        scale_X = TRUE, scale_Y = TRUE,

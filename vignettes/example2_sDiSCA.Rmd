@@ -1,0 +1,457 @@
+---
+title: "example2"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{example2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SPAFAC)
+```
+
+
+```{r}
+data("example2_sDiSCA")
+```
+
+
+
+```{r}
+## replace group names ----------
+## get color ------------------
+group.match <- c("~Fr.18th" = "Fr($\\sim$18th)", "Fr.19th" = "Fr(19th)", "Fr.20th+" = "Fr(20th+)", "~Eng.18th"  = "Eng($\\sim$18th)",   "~UK.18th" = "UK($\\sim$18th)", "UK.19th" = "UK(19th)", "UK.20th+" = "UK(20th+)", "~Amrc.19th" = "Amrc($\\sim$19th)", "Amrc.20th+" = "Amrc(20th+)", "US.20th+" = "US(20th+)")
+
+group.match2 <- c("~Fr_18th" = "Fr($\\sim$18th)", "Fr_19th" = "Fr(19th)", "Fr_20th+" = "Fr(20th+)", "~Eng_18th"  = "Eng($\\sim$18th)",   "~UK_18th" = "UK($\\sim$18th)", "UK_19th" = "UK(19th)", "UK_20th+" = "UK(20th+)", "~Amrc_19th" = "Amrc($\\sim$19th)", "Amrc_20th+" = "Amrc(20th+)", "US_20th+" = "US(20th+)")
+
+## get color ------------------
+col.idx <- c("Fr($\\sim$18th)" = "navy", "Fr(19th)" = "royalblue2", "Fr(20th+)" = "steelblue2", "Eng($\\sim$18th)" = "brown", "UK($\\sim$18th)" = "darkorange3", "UK(19th)" = "darkorange2","UK(20th+)" = "darkgoldenrod1", "Amrc($\\sim$19th)" = "firebrick", "Amrc(20th+)" = "palevioletred", "US(20th+)" = "palevioletred")
+
+col.group.blnc <- as.matrix(recode(data.dx.blncC$GroupDiCA, !!!group.match) |> recode(!!!col.idx))
+rownames(col.group.blnc) <- data.dx.blncC$Authors
+
+col.group.unblnc <- as.matrix(recode(data.dx.unblnc$GroupDiCA, !!!group.match2) |> recode(!!!col.idx))
+rownames(col.group.unblnc) <- data.dx.unblnc$Authors
+
+## Change symbols
+colnames(FrEnAuthors.unblnc)[7:9] <- c("$^\\prime$", "``\"$_{\\ll\\gg}$", "----")
+
+data.dx.blncC$GroupDiCA.recode <- recode(data.dx.blncC$GroupDiCA, !!!group.match)
+```
+
+
+
+
+# The group pattern in heatmap
+```{r, include=FALSE, fig.show = 'hold', out.width = "33.3%"}
+coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25) # Pink (Neg) to Green (Pos)
+unblnc.dx.disj <- makeNominalData(as.matrix(data.dx.unblnc$GroupDiCA.recode))
+groupCntgy.unblnc <- t(unblnc.dx.disj) %*% FrEnAuthors.unblnc
+rownames(groupCntgy.unblnc) <- sub(".","", rownames(groupCntgy.unblnc))
+
+# Original data
+heatmap(groupCntgy.unblnc, Rowv = NA, Colv = NA)
+# Deviation from independence
+heatmap(makeRowProfiles(groupCntgy.unblnc)$deviations, Rowv = NA, Colv = NA, col = coul)
+
+```
+
+# Plain DisCA
+```{r}
+dica.unblnc <- tepDICA.inference.battery(FrEnAuthors.unblnc, make_data_nominal = FALSE, 
+                                         unblnc.dx.disj, make_design_nominal = FALSE, symmetric = TRUE, graphs = FALSE)
+rownames(dica.unblnc$Fixed.Data$TExPosition.Data$fi) <- sub(".","", rownames(dica.unblnc$Fixed.Data$TExPosition.Data$fi))
+colnames(dica.unblnc$Fixed.Data$TExPosition.Data$fi) <- paste0("Component ", c(1:ncol(dica.unblnc$Fixed.Data$TExPosition.Data$fi)))
+colnames(dica.unblnc$Fixed.Data$TExPosition.Data$fj) <- paste0("Component ", c(1:ncol(dica.unblnc$Fixed.Data$TExPosition.Data$fj)))
+colnames(dica.unblnc$Fixed.Data$TExPosition.Data$fii) <- paste0("Component ", c(1:ncol(dica.unblnc$Fixed.Data$TExPosition.Data$fii)))
+
+# rename variables
+dica.unblnc.fi <- dica.unblnc$Fixed.Data$TExPosition.Data$fi
+dica.unblnc.fii <- dica.unblnc$Fixed.Data$TExPosition.Data$fii
+dica.unblnc.fj <- dica.unblnc$Fixed.Data$TExPosition.Data$fj
+
+dica.unblnc.boot <- dica.unblnc$Inference.Data$boot.data$fi.boot.data$boots
+rownames(dica.unblnc.boot) <- sub(".", "", rownames(dica.unblnc.boot))
+colnames(dica.unblnc.boot) <- paste0("Component ", c(1:ncol(dica.unblnc.boot)))
+
+```
+
+```{r}
+dica.unblnc$Inference.Data$loo.data$loo.acc
+
+country.dx <- c("Amrc", "UK", "UK", "UK", "Amrc", "Fr", "Fr", "Fr") |> as.matrix |> makeNominalData()
+
+region.class <- t(country.dx) %*% dica.unblnc$Inference.Data$loo.data$loo.confuse %*% country.dx
+region.class
+
+sum(diag(region.class))/sum(region.class)
+diag(region.class)/colSums(region.class)
+```
+
+
+# DisCA results
+```{r}
+
+## Lables
+dica.label12.unblnc <- createxyLabels.gen.tikz(1,2,
+                                          lambda = dica.unblnc$Fixed.Data$TExPosition.Data$eigs,
+                                          tau = round(dica.unblnc$Fixed.Data$TExPosition.Data$t),
+                                          axisName = "Component ",
+                                          hat = FALSE
+)
+
+## Biplot
+dica.fii12.unblnc <- createFactorMap(dica.unblnc.fii,
+                                     axis1 = 1, axis2 = 2,
+                                     constraints = minmaxHelper(dica.unblnc.fii, dica.unblnc.fj, axis1 = 1, axis2 = 2),
+                                     col.points = col.group.unblnc[rownames(dica.unblnc.fii),], alpha.points = 0.2)
+dica.plot12.unblnc <- createFactorMapIJ(dica.unblnc.fi, 
+                                        dica.unblnc.fj,axis1 = 1, axis2 = 2,
+                                        text.cex.i = 2, cex.i = 2, pch.i = 17, alpha.points.i = 1,
+                                        cex.j = 4, alpha.poin.j = 1,
+                                        col.points.i = col.idx[rownames(dica.unblnc.fi)],
+                                        col.labels.i = col.idx[rownames(dica.unblnc.fi)],
+                                        col.background = NULL,
+                                        col.axes = "#42376B",
+                                        width.axes = 0.5,
+                                        label.axisName = "Component ",
+                                        alpha.axes = 0.5,
+                                        title = "DiSCA: factor scores of \nauthor groups (rows)")
+dicaCI.12.unblnc <- MakeCIEllipses(dica.unblnc.boot, axis1 = 1, axis2 = 2, 
+                                   names.of.factors = paste0("Component ", c(1:2)),
+                                   col = col.idx[rownames(dica.unblnc.boot)], 
+                                   p.level = .95, line.size = 0.2, alpha.line = 0.2, alpha.ellipse = 0.05)
+dica.fi.plot <- dica.plot12.unblnc$baseMap + dicaCI.12.unblnc + dica.plot12.unblnc$I_labels + dica.plot12.unblnc$I_points + dica.label12.unblnc + theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+# disca.fi <- dica.plot12.unblnc$baseMap + dicaCI.12.unblnc + dica.plot12.unblnc$I_labels + dica.plot12.unblnc$I_points + dica.label12.unblnc + theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+## Only Fj
+dicaj.plot12.unblnc <- createFactorMap(dica.unblnc.fj,
+                                       axis1 = 1, axis2 = 2,
+                                       col.points = "darkolivegreen",
+                                       col.labels = "darkolivegreen",
+                                       text.cex = 3,
+                                       col.background = NULL,
+                                       col.axes = "#42376B",
+                                       width.axes = 0.5,
+                                       label.axisName = "Component ",
+                                       alpha.axes = 0.5,
+                                       pch = 18, cex = 2,
+                                       title = "DiSCA: factor scores of \npunctuation marks (columns)")#,
+
+dica.fj.plot <- dicaj.plot12.unblnc$zeMap + dica.label12.unblnc + theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+```
+
+# Sparsity index
+
+```{r allparz, cache = TRUE, include = FALSE, message = FALSE, warning=FALSE}
+### Run iterations
+K <- 6L
+
+I <- 8#nrow(FrEnAuthors.unblnc)
+J <- ncol(FrEnAuthors.unblnc)
+
+parz <- expand.grid(
+  rdsleft = seq(sqrt(I), 1, length = 10),
+  rdsright = seq(sqrt(J), 1, length = 10))
+
+parz <- parz[order(rowSums(parz^2/c(I,J)), decreasing = T), ]
+
+iter <- 1
+res.sdisca.list <- NULL
+U0 <- NULL
+V0 <- NULL
+
+for (rds.iter in 1:nrow(parz)) {
+  cat(sprintf("Left radius: %0.2f - Right radius: %0.2f\n", parz[rds.iter, 1], parz[rds.iter, 2]))
+  res.sdisca.list[[iter]] <- tryCatch(
+    sparseDiCA(DATA = FrEnAuthors.unblnc, design = data.dx.unblnc$GroupDiCA,
+               ca.type = "sca", components = K, 
+               make_design_nominal = TRUE,
+               rdsLeft = rep(parz[rds.iter, 1], K), 
+               rdsRight = rep(parz[rds.iter, 2], K), 
+               initLeft = U0, initRight = V0,
+               grpLeft = NULL, grpRight = NULL), error = function(e) NA
+  )
+  # if (!is.na(res.sdisca.list[[iter]])){
+    U0 <- res.sdisca.list[[iter]]$gsvd$p
+    V0 <- res.sdisca.list[[iter]]$gsvd$q
+  # }
+  iter <- iter + 1
+}
+
+### record results
+dat.si <- data.frame(
+  parz = parz, 
+  SI = unname(t(data.frame(SI = sapply(res.sdisca.list, extract_si, "SI")))))
+
+dat.si.m <- dat.si |> 
+  tidyr::pivot_longer(starts_with("SI"), names_to = "k", names_prefix = "SI\\.")
+
+dat.fit.zeros <- data.frame(
+  rdsleft = dat.si.m$parz.rdsleft, 
+  rdsright = dat.si.m$parz.rdsright, 
+  k = dat.si.m$k,
+  fit = pivot_the_tab(sapply(res.sdisca.list, extract_si, "r1")),
+  zeros = pivot_the_tab(sapply(res.sdisca.list, extract_si, "r4")),
+  SI = dat.si.m$value)
+
+#### Newer version
+dat.si <- data.frame(
+  parz = unname(parz), 
+  SI = unname(t(sapply(res.sdisca.list, extract_si, "SI"))),
+  fit = unname(t(sapply(res.sdisca.list, extract_si, "r1"))),
+  zeros = unname(t(sapply(res.sdisca.list, extract_si, "r4"))))
+
+dat.fit.zeros <- dat.si |> 
+  tidyr::pivot_longer(
+    -c(parz.1, parz.2),
+    names_to = c(".value", "k"),
+    names_pattern = "(.*)\\.(.*)")
+####
+
+
+
+theta <- seq(pi, 3/2*pi, length.out = 150)
+```
+
+```{r fitzeroratioplot}
+dimcol <- GetColors(n = 7, scheme = "discrete rainbow")[7:2]
+names(dimcol) <- as.factor(1:6)
+# dimcol <- dimcol[c("2","3","4","5","6","7")]
+dimcol["2"] <- "#f7c856"
+
+# dat.fit.zeros <- na.omit(dat.fit.zeros)
+# dat.fit.zeros <- na.omit(dat.fit.zeros |> filter(k %in% c("2", "3", "4", "5","6")))
+dat.fit.zeros$max <- ifelse(dat.fit.zeros$k > 1 & dat.fit.zeros$SI == max(dat.fit.zeros$SI[which(dat.fit.zeros$k > 1)]), "MAX", "NOTMAX")
+dat.fit.zeros$MAX <- ifelse(dat.fit.zeros$k > 1 & dat.fit.zeros$SI == max(dat.fit.zeros$SI[which(dat.fit.zeros$k > 1)]), "darkorchid4", NA)
+dat.fit.zeros$alpha <- ifelse(dat.fit.zeros$k > 1 & dat.fit.zeros$SI == max(dat.fit.zeros$SI[which(dat.fit.zeros$k > 1)]), 1, 0.2)
+
+siplot <- ggplot(dat.fit.zeros, aes(zeros, fit)) + 
+  geom_hline(yintercept = 1, color = "#42376B", alpha = 0.6, linetype = 3) + 
+  geom_vline(xintercept = 1, color = "#42376B", alpha = 0.6, linetype = 3) + 
+  lapply(seq(0.25, 1.25, by = 0.25), function(r) annotate("path",
+                                                          x = 1 + r*cos(theta),
+                                                          y = 1 + r*sin(theta),
+                                                          color = "#42376B")) + 
+  lapply(seq(0.125, 1.5, by = 0.25), function(r) annotate("path",
+                                                          x = 1 + r*cos(theta),
+                                                          y = 1 + r*sin(theta),
+                                                          color = "#42376B", size = 0.2))  +
+  geom_abline(intercept = 0, slope = 1, color = "#42376B", alpha = 0.6, linetype = 3) +
+  geom_point(aes(alpha = I(alpha), color = k)) +
+  guides(color = guide_legend(override.aes = list(shape = 19, color = dimcol)), shape = 19) +
+  theme_bw() + 
+  scale_color_manual(breaks= as.factor(c(1:7)), values = dimcol) +
+  scale_fill_manual(breaks= as.factor(c(1:7)), values = dimcol) +
+  coord_equal(xlim=0:1, ylim = 0:1) + 
+  labs(x = "Zero ratio", y = "Fit", size = "Sparsity\nIndex", color = "Number of\nComponents") + 
+  # ggtitle("Ratio of zeros as a\nfunction of the fit ratio") + 
+  theme(
+    axis.title = element_text(size = 8, color = "#42376B"), 
+    axis.text = element_text(size = 8, color = "#42376B"), 
+    title = element_text(size = 8, color = "#42376B"),
+    legend.key.size = unit(0.1, "cm"), legend.text = element_text(size = 6), legend.position = "right",
+    legend.spacing.x = unit(0.05, "cm"),
+    legend.margin = margin(0,0,0,0), legend.box.margin = margin(-5,0,0,0),
+    legend.title.align = 0, legend.title = element_text(size = 6),
+    panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA),
+    plot.margin = unit(c(0.1,0,0,0), unit = "cm"),
+    panel.grid = element_blank()) + 
+  with(dat.fit.zeros[dat.fit.zeros$max == "MAX",], annotate(geom = "point", x = zeros, y = fit, alpha = alpha, fill = dimcol["2"], color = "darkorchid4", shape = 21, size = 1.5)) +
+  with(dat.fit.zeros[dat.fit.zeros$max == "MAX",], annotate(geom = "segment", x = zeros + 0.25, y = fit + 0.2, xend = zeros+ 0.02, yend = fit + 0.02, arrow = arrow(length = unit(0.05, "inches"), type = "closed"), color = "darkorchid4", size = 0.6)) + #0.05, 0.5
+  # with(dat.fit.zeros[dat.fit.zeros$max == "MAX",], annotate(geom = "segment", x = zeros + 0.025, y = fit + 0.022, xend = zeros+ 0.02, yend = fit + 0.02, arrow = arrow(length = unit(0.04, "inches"), type = "closed"), color = "#f7d556", size = 0.01)) + #0.04, 0.01
+  with(dat.fit.zeros[dat.fit.zeros$max == "MAX",], annotate(geom = "label", x = zeros + 0.26, y = fit + 0.18, color = "darkorchid4", label = substring(sprintf("%.3f", SI), 2), fill = "#f7d556", size = 2.5))
+
+siplot
+```
+
+# sDisCA results
+```{r}
+optres <- dat.fit.zeros[dat.fit.zeros$max == "MAX",]
+kopt <- optres$k
+rdsleftopt <- optres$parz.1
+rdsrightopt <- optres$parz.2
+SIopt <- optres$SI
+
+kopt;rdsleftopt/sqrt(I);rdsrightopt/sqrt(J);SIopt
+```
+
+```{r}
+res.sdisca <- sparseDiCA(DATA = FrEnAuthors.unblnc,
+                         design = data.dx.unblnc$GroupDiCA.recode,
+                         ca.type = "sca", components = kopt,
+                         make_design_nominal = TRUE,
+                         rdsLeft = rep(rdsleftopt, K),
+                         rdsRight = rep(rdsrightopt, K),
+                         initLeft = U0, initRight = V0,
+                         grpLeft = NULL, grpRight = NULL)
+
+rownames(res.sdisca$fii) <- rownames(FrEnAuthors.unblnc)
+
+res.sdisca7 <- sparseDiCA(DATA = FrEnAuthors.unblnc,
+                          design = data.dx.unblnc$GroupDiCA.recode,
+                          ca.type = "sca", components = 6,
+                          make_design_nominal = TRUE,
+                          rdsLeft = rep(rdsleftopt, K),
+                          rdsRight = rep(rdsrightopt, K),
+                          initLeft = U0, initRight = V0,
+                          grpLeft = NULL, grpRight = NULL)
+
+sdisca.eig <- data.frame(eig = res.sdisca7$eig, tau =  res.sdisca7$eig / sum(dica.unblnc$Fixed.Data$TExPosition.Data$eigs))
+
+scree.plot <- PlotMyScreeTikz(sdisca.eig, cex = 2, text.cex = 8, lwd = 0.5, color.sig = rep("#42376B", 6))+ theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, fill = NA, color = "#42376B"))
+scree.plot
+```
+
+## factor scores
+```{r}
+sdisca.fi <- res.sdisca$fi
+sdisca.fii <- res.sdisca$fii
+sdisca.fj <- res.sdisca$fj
+colnames(sdisca.fii) <- paste0("Component ", c(1:2))
+colnames(sdisca.fi) <- paste0("Component ", c(1:2))
+colnames(sdisca.fj) <- paste0("Component ", c(1:2))
+
+
+sdisca.boot <- Boot4Mean(sdisca.fii, data.dx.unblnc$GroupDiCA.recode)$BootCube
+colnames(sdisca.boot) <- paste0("Component ", c(1:ncol(sdisca.boot)))
+
+```
+
+## plot
+```{r}
+## Lables
+sdisca.label12 <- createxyLabels.gen.tikz(1,2,
+                                     lambda = res.sdisca$eig,
+                                     tau = round(100*res.sdisca$eig/sum(dica.unblnc$Fixed.Data$TExPosition.Data$eigs)),
+                                     axisName = "Component ",
+                                     hat = TRUE
+)
+
+
+sdiscaCI.12 <- MakeCIEllipses(sdisca.boot, axis1 = 1, axis2 = 2, 
+                              names.of.factors = paste0("Component ",c(1:ncol(sdisca.boot))),
+                              col = col.idx[rownames(sdisca.boot)], 
+                              p.level = .95, line.size = 0.2, alpha.line = 0.2, alpha.ellipse = 0.05)
+
+## Biplot
+sdisca.adjust <- createFactorMapIJ(sdisca.fi, 
+                                   sdisca.fj, axis1 = 1, axis2 = 2,
+                                   constraints = lapply(minmaxHelper(sdisca.fi, sdisca.fj), '*', 2.3),
+                                   text.cex.i = 2, cex.i = 1, pch.i = 17, alpha.points.i = 1,
+                                   cex.j = 4, alpha.poin.j = 1,
+                                   col.background = NULL,
+                                   col.axes = "#42376B",
+                                   width.axes = 0.5,
+                                   label.axisName = "Component ",
+                                   alpha.axes = 0.5,
+                                   col.points.i = col.idx[rownames(sdisca.fi)],
+                                   col.labels.i = col.idx[rownames(sdisca.fi)],
+                                   title = "sDiSCA: factor scores of \nauthor groups (rows)")
+sdisca.fii.plot12 <- createFactorMap(sdisca.fii,
+                                     axis1 = 1, axis2 = 2,
+                                     constraints = minmaxHelper(sdisca.fii, sdisca.fj, axis1 = 1, axis2 = 2),
+                                     col.points = col.group.unblnc[rownames(sdisca.fii),], alpha.points = 0.2)
+sdisca.plot12 <- createFactorMapIJ(sdisca.fi, 
+                                   sdisca.fj,axis1 = 1, axis2 = 2,
+                                   text.cex.i = 2, cex.i = 2, pch.i = 17, alpha.points.i = 1,
+                                   cex.j = 4, alpha.poin.j = 1,
+                                   col.points.i = col.idx[rownames(sdisca.fi)],
+                                   col.labels.i = col.idx[rownames(sdisca.fi)],
+                                   title = "sDiSCA: factor scores of \nauthor groups (rows)")
+sdisca.fii.plot12$zeMap_background + sdisca.fii.plot12$zeMap_dots + sdiscaCI.12 + sdisca.plot12$I_labels + sdisca.plot12$I_points + sdisca.label12
+
+sdisca.fi.plot <- sdisca.adjust$baseMap + sdiscaCI.12 + sdisca.plot12$I_labels + sdisca.plot12$I_points + sdisca.label12+ theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+
+# sdisca.fi <- sdisca.plot12$baseMap + sdisca.plot12$I_labels + sdisca.plot12$I_points + sdisca.label12 + theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+
+## Only Fj
+sdiscaj.plot12 <- createFactorMap(sdisca.fj,
+                                  axis1 = 1, axis2 = 2, 
+                                  text.cex = 3, cex = 2,
+                                  col.background = NULL,
+                                  col.axes = "#42376B",
+                                  width.axes = 0.5,
+                                  label.axisName = "Component ",
+                                  alpha.axes = 0.5,
+                                  col.points = "darkolivegreen",
+                                  col.labels = "darkolivegreen",
+                                  title = "sDiSCA: factor scores of \npunctuation marks (columns)",
+                                  pch = 18)#,
+
+sdisca.fj.plot <- sdisca.adjust$baseMap + sdiscaj.plot12$zeMap_dots + sdiscaj.plot12$zeMap_text + sdisca.label12 + ggtitle("sDiSCA: factor scores of \npunctuation marks (columns)") + theme(axis.title = element_text(size = 8, color = "#42376B"), axis.text = element_text(size = 8, color = "#42376B"), title = element_text(size = 8, color = "#42376B"), panel.border = element_rect(size = 1.5, color = "#42376B", fill = NA))
+```
+```{r}
+res.sdisca$classification$acc
+res.sdisca$classification$acc.per.group
+classification.table <- res.sdisca$classification$table
+
+knitr::kable(classification.table)
+
+country.dx <- c("Amrc", "Fr", "UK", "Amrc", "Fr", "Fr", "UK", "UK") |> as.matrix |> makeNominalData()
+
+region.class <- t(country.dx) %*% classification.table %*% country.dx
+region.class
+
+sum(diag(region.class))/sum(region.class)
+diag(region.class)/colSums(region.class)
+```
+
+
+## Figure
+
+```{r}
+scree.grob <- scree.plot |>
+  arrangeGrob(top = textGrob(expression(bold("A")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+si.grob <- siplot |>
+  arrangeGrob(top = textGrob(expression(bold("B")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+disca.fi.grob <- dica.fi.plot |>
+  arrangeGrob(top = textGrob(expression(bold("C")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+disca.fj.grob <- dica.fj.plot |>
+  arrangeGrob(top = textGrob(expression(bold("D")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+sdisca.fi.grob <- sdisca.fi.plot |>
+  arrangeGrob(top = textGrob(expression(bold("E")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+
+sdisca.fj.grob <- sdisca.fj.plot |>
+  arrangeGrob(top = textGrob(expression(bold("F")), x = unit(0, "npc"), y   = unit(1, "npc"), just=c("left","top"), gp=gpar(col="black", fontsize=10)))
+```
+
+
+```{r}
+# png(filename="Figure-sDiSCA.png", width = 170, height = 200, units = "mm", bg = "white",res = 600)
+DiCAplot <- gridExtra::grid.arrange(grobs = list(scree.grob, si.grob, 
+                                     disca.fi.grob, sdisca.fi.grob,
+                                     disca.fj.grob, sdisca.fj.grob),
+                        widths = c(0.5, 0.5),
+                        heights = c(0.26,0.37,0.37),
+                        layout_matrix = rbind(c(1,2),
+                                              c(3,4),
+                                              # c(3,5,5,4),
+                                              # c(7,6,6,8),
+                                              c(5,6))
+)
+# dev.off()
+
+tf <- "Figure-sDiCA_20220915_tikz.tex"
+tikz(tf, standAlone = TRUE, width = 6.69, height = 7.87, bg = "white")
+grid.newpage()
+grid.draw(DiCAplot)
+dev.off()
+
+# View the output
+tools::texi2dvi(tf, pdf = TRUE)
+```

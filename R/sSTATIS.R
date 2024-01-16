@@ -1,51 +1,61 @@
-#' sparse STATIS
+#' Sparse STATIS
 #'
-#' @param X Data matrix with \emph{I} rows and \emph{J} columns
-#' @param column.design
-#' @param mfa.normalize TRUE (default) or FALSE.
-#' @param sparse.Cmat TRUE or FALSE (default). If the C matrix (e.g., the RV matrix) is sparsified to obtain the weights.
-#' @param sparse.Splus TRUE (default) or FALSE. If the compromise is sparsified.
-#' @param components.Cmat the number of dimensions to extract from the C matrix (e.g., the RV matrix).
-#' @param components.Splus the number of dimensions to extract from the compromise.
-#' @param sparseOption "variable" or "subtable"
-#' @param center For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
-#' @param scale For the \code{X} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
-#' @param tol default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).
-#' @param init.Cmat
-#' @param init.Splus
-#' @param initLeft.Splus
-#' @param initRight.Splus
-#' @param seed
-#' @param rdsLeft.Cmat
-#' @param rdsRight.Cmat
-#' @param rdsLeft.Splus
-#' @param rdsRight.Splus
-#' @param grp.Cmat
-#' @param grpLeft.Splus
-#' @param grpRight.Splus
-#' @param orthogonality.Cmat
-#' @param orthogonality.Splus
-#' @param OrthSpaceLeft.Splus
-#' @param OrthSpaceRight.Splus
-#' @param projPriority.Cmat
-#' @param projPriority.Splus
-#' @param projPriorityLeft.Splus
-#' @param projPriorityRight.Splus
-#' @param itermaxALS.Cmat
-#' @param itermaxPOCS.Cmat
-#' @param itermaxALS.Splus
-#' @param itermaxPOCS.Splus
-#' @param epsALS.Cmat
-#' @param epsPOCS.Cmat
-#' @param epsALS.Splus
-#' @param epsPOCS.Splus
+#' Performs sparse STATIS analysis on a data matrix with a specific column design.
 #'
-#' @return
+#' @param X Data matrix with I rows and J columns.
+#' @param column.design Design vector indicating the grouping of columns.
+#' @param mfa.normalize Logical indicating whether to normalize data for MFA; defaults to TRUE.
+#' @param sparse.Cmat Logical indicating whether the C matrix (RV matrix) is sparsified; defaults to FALSE.
+#' @param sparse.grandX Logical indicating whether the compromise is sparsified; defaults to TRUE.
+#' @param components.Cmat Number of dimensions to extract from the C matrix (RV matrix); defaults to 0.
+#' @param components.grandX Number of dimensions to extract from the compromise; defaults to 0.
+#' @param sparseOption "variable" or "subtable" indicating the sparsity option.
+#' @param center Logical or numeric vector for centering each column of X; passed to \code{\link{scale}}.
+#' @param scale Logical or numeric vector for scaling each column of X; passed to \code{\link{scale}}.
+#' @param tol Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.
+#' @param init.Cmat Initialization method for Cmat; defaults to "eig".
+#' @param init.grandX Initialization method for grandX; defaults to "svd".
+#' @param initLeft.grandX Initial values for the left side of grandX; defaults to NULL.
+#' @param initRight.grandX Initial values for the right side of grandX; defaults to NULL.
+#' @param seed Seed for random number generation; defaults to NULL.
+#' @param rdsLeft.Cmat Radii for the left side of Cmat; defaults to rep(1, components.Cmat).
+#' @param rdsRight.Cmat Radii for the right side of Cmat; defaults to rep(1, components.Cmat).
+#' @param rdsLeft.grandX Radii for the left side of grandX; defaults to rep(1, components.grandX).
+#' @param rdsRight.grandX Radii for the right side of grandX; defaults to rep(1, components.grandX).
+#' @param grp.Cmat Grouping vector for the Cmat; defaults to NULL.
+#' @param grpLeft.grandX Grouping vector for the left side of grandX; defaults to NULL.
+#' @param grpRight.grandX Grouping vector for the right side of grandX; defaults to NULL.
+#' @param orthogonality.Cmat Type of orthogonality constraint for Cmat; defaults to "loadings".
+#' @param OrthSpaceLeft.Cmat Orthogonal space for the left side of Cmat; defaults to NULL.
+#' @param OrthSpaceRight.Cmat Orthogonal space for the right side of Cmat; defaults to NULL.
+#' @param orthogonality.grandX Type of orthogonality constraint for grandX; defaults to "loadings".
+#' @param OrthSpaceLeft.grandX Orthogonal space for the left side of grandX; defaults to NULL.
+#' @param OrthSpaceRight.grandX Orthogonal space for the right side of grandX; defaults to NULL.
+#' @param projPriority.Cmat Priority of the projection for Cmat; defaults to "orth".
+#' @param projPriorityLeft.Cmat Priority of the left projection for Cmat; defaults to projPriority.Cmat.
+#' @param projPriorityRight.Cmat Priority of the right projection for Cmat; defaults to projPriority.Cmat.
+#' @param projPriority.grandX Priority of the projection for grandX; defaults to "orth".
+#' @param projPriorityLeft.grandX Priority of the left projection for grandX; defaults to projPriority.grandX.
+#' @param projPriorityRight.Slus Priority of the right projection for grandX; defaults to projPriority.grandX.
+#' @param itermaxALS.Cmat Maximum number of ALS iterations for Cmat; defaults to 1000.
+#' @param itermaxPOCS.Cmat Maximum number of POCS iterations for Cmat; defaults to 1000.
+#' @param itermaxALS.grandX Maximum number of ALS iterations for grandX; defaults to 1000.
+#' @param itermaxPOCS.grandX Maximum number of POCS iterations for grandX; defaults to 1000.
+#' @param epsALS.Cmat Convergence criterion for ALS for Cmat; defaults to 1e-10.
+#' @param epsPOCS.Cmat Convergence criterion for POCS for Cmat; defaults to 1e-10.
+#' @param epsALS.grandX Convergence criterion for ALS for grandX; defaults to 1e-10.
+#' @param epsPOCS.grandX Convergence criterion for POCS for grandX; defaults to 1e-10.
+#'
+#' @return Returns an object containing the results of the sparse STATIS analysis, including details of the C matrix (RV matrix), compromise, and various parameters and settings used in the analysis.
+#'
 #' @export
 #'
 #' @source Some lines of the function are inspired by the MExPosition package by Derek Beaton and Cherise Chin Fatt.
 #' @examples
-
+#' # Example usage of sparseSTATIS function
+#' # Assuming `X` is a data matrix and `column.design` is the design vector
+#' \dontrun{result <- sparseSTATIS(X = X, column.design = column.design)}
+#'
 sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE,
                       sparse.Cmat = FALSE, sparse.grandX = TRUE,
                       components.Cmat = 0, components.grandX = 0,

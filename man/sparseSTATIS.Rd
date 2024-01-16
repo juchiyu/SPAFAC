@@ -2,7 +2,7 @@
 % Please edit documentation in R/sSTATIS.R
 \name{sparseSTATIS}
 \alias{sparseSTATIS}
-\title{sparse STATIS}
+\title{Sparse STATIS}
 \source{
 Some lines of the function are inspired by the MExPosition package by Derek Beaton and Cherise Chin Fatt.
 }
@@ -54,28 +54,101 @@ sparseSTATIS(
 )
 }
 \arguments{
-\item{X}{Data matrix with \emph{I} rows and \emph{J} columns}
+\item{X}{Data matrix with I rows and J columns.}
 
-\item{mfa.normalize}{TRUE (default) or FALSE.}
+\item{column.design}{Design vector indicating the grouping of columns.}
 
-\item{sparse.Cmat}{TRUE or FALSE (default). If the C matrix (e.g., the RV matrix) is sparsified to obtain the weights.}
+\item{mfa.normalize}{Logical indicating whether to normalize data for MFA; defaults to TRUE.}
 
-\item{components.Cmat}{the number of dimensions to extract from the C matrix (e.g., the RV matrix).}
+\item{sparse.Cmat}{Logical indicating whether the C matrix (RV matrix) is sparsified; defaults to FALSE.}
 
-\item{sparseOption}{"variable" or "subtable"}
+\item{sparse.grandX}{Logical indicating whether the compromise is sparsified; defaults to TRUE.}
 
-\item{center}{For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.}
+\item{components.Cmat}{Number of dimensions to extract from the C matrix (RV matrix); defaults to 0.}
 
-\item{scale}{For the \code{X} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.}
+\item{components.grandX}{Number of dimensions to extract from the compromise; defaults to 0.}
 
-\item{tol}{default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).}
+\item{sparseOption}{"variable" or "subtable" indicating the sparsity option.}
 
-\item{sparse.Splus}{TRUE (default) or FALSE. If the compromise is sparsified.}
+\item{center}{Logical or numeric vector for centering each column of X; passed to \code{\link{scale}}.}
 
-\item{components.Splus}{the number of dimensions to extract from the compromise.}
+\item{scale}{Logical or numeric vector for scaling each column of X; passed to \code{\link{scale}}.}
 
-\item{epsPOCS.Splus}{}
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
+
+\item{init.Cmat}{Initialization method for Cmat; defaults to "eig".}
+
+\item{init.grandX}{Initialization method for grandX; defaults to "svd".}
+
+\item{initLeft.grandX}{Initial values for the left side of grandX; defaults to NULL.}
+
+\item{initRight.grandX}{Initial values for the right side of grandX; defaults to NULL.}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rdsLeft.Cmat}{Radii for the left side of Cmat; defaults to rep(1, components.Cmat).}
+
+\item{rdsRight.Cmat}{Radii for the right side of Cmat; defaults to rep(1, components.Cmat).}
+
+\item{rdsLeft.grandX}{Radii for the left side of grandX; defaults to rep(1, components.grandX).}
+
+\item{rdsRight.grandX}{Radii for the right side of grandX; defaults to rep(1, components.grandX).}
+
+\item{grp.Cmat}{Grouping vector for the Cmat; defaults to NULL.}
+
+\item{grpLeft.grandX}{Grouping vector for the left side of grandX; defaults to NULL.}
+
+\item{grpRight.grandX}{Grouping vector for the right side of grandX; defaults to NULL.}
+
+\item{orthogonality.Cmat}{Type of orthogonality constraint for Cmat; defaults to "loadings".}
+
+\item{OrthSpaceLeft.Cmat}{Orthogonal space for the left side of Cmat; defaults to NULL.}
+
+\item{OrthSpaceRight.Cmat}{Orthogonal space for the right side of Cmat; defaults to NULL.}
+
+\item{orthogonality.grandX}{Type of orthogonality constraint for grandX; defaults to "loadings".}
+
+\item{OrthSpaceLeft.grandX}{Orthogonal space for the left side of grandX; defaults to NULL.}
+
+\item{OrthSpaceRight.grandX}{Orthogonal space for the right side of grandX; defaults to NULL.}
+
+\item{projPriority.Cmat}{Priority of the projection for Cmat; defaults to "orth".}
+
+\item{projPriorityLeft.Cmat}{Priority of the left projection for Cmat; defaults to projPriority.Cmat.}
+
+\item{projPriorityRight.Cmat}{Priority of the right projection for Cmat; defaults to projPriority.Cmat.}
+
+\item{projPriority.grandX}{Priority of the projection for grandX; defaults to "orth".}
+
+\item{projPriorityLeft.grandX}{Priority of the left projection for grandX; defaults to projPriority.grandX.}
+
+\item{projPriorityRight.Slus}{Priority of the right projection for grandX; defaults to projPriority.grandX.}
+
+\item{itermaxALS.Cmat}{Maximum number of ALS iterations for Cmat; defaults to 1000.}
+
+\item{itermaxPOCS.Cmat}{Maximum number of POCS iterations for Cmat; defaults to 1000.}
+
+\item{itermaxALS.grandX}{Maximum number of ALS iterations for grandX; defaults to 1000.}
+
+\item{itermaxPOCS.grandX}{Maximum number of POCS iterations for grandX; defaults to 1000.}
+
+\item{epsALS.Cmat}{Convergence criterion for ALS for Cmat; defaults to 1e-10.}
+
+\item{epsPOCS.Cmat}{Convergence criterion for POCS for Cmat; defaults to 1e-10.}
+
+\item{epsALS.grandX}{Convergence criterion for ALS for grandX; defaults to 1e-10.}
+
+\item{epsPOCS.grandX}{Convergence criterion for POCS for grandX; defaults to 1e-10.}
+}
+\value{
+Returns an object containing the results of the sparse STATIS analysis, including details of the C matrix (RV matrix), compromise, and various parameters and settings used in the analysis.
 }
 \description{
-sparse STATIS
+Performs sparse STATIS analysis on a data matrix with a specific column design.
+}
+\examples{
+# Example usage of sparseSTATIS function
+# Assuming `X` is a data matrix and `column.design` is the design vector
+\dontrun{result <- sparseSTATIS(X = X, column.design = column.design)}
+
 }

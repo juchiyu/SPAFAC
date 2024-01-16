@@ -2,7 +2,7 @@
 % Please edit documentation in R/sPLSCA.R
 \name{sparsePLSCA}
 \alias{sparsePLSCA}
-\title{sparse Partial Least Square Correspondence anlaysis}
+\title{Sparse Partial Least Square Correspondence Analysis}
 \usage{
 sparsePLSCA(
   X,
@@ -36,12 +36,71 @@ sparsePLSCA(
 )
 }
 \arguments{
-\item{epsPOCS}{}
+\item{X}{Data matrix with I rows and J columns.}
 
-\item{DATA}{the contingency table}
+\item{Y}{Data matrix with I rows and K columns.}
 
-\item{k}{the number of dimensions}
+\item{Mx}{Diagonal weight matrix for rows of X; defaults to NULL.}
+
+\item{My}{Diagonal weight matrix for rows of Y; defaults to NULL.}
+
+\item{Wx}{Diagonal weight matrix for columns of X; defaults to NULL.}
+
+\item{Wy}{Diagonal weight matrix for columns of Y; defaults to NULL.}
+
+\item{components}{The number of dimensions to extract; defaults to 2.}
+
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
+
+\item{doublecentering_X}{Logical indicating whether to apply double centering on X; defaults to TRUE.}
+
+\item{doublecentering_Y}{Logical indicating whether to apply double centering on Y; defaults to TRUE.}
+
+\item{init}{Initialization method; defaults to "svd".}
+
+\item{initLeft}{Initial values for the left side; defaults to NULL.}
+
+\item{initRight}{Initial values for the right side; defaults to NULL.}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rdsLeft}{Radii for the left side; defaults to rep(1, components).}
+
+\item{rdsRight}{Radii for the right side; defaults to rep(1, components).}
+
+\item{grpLeft}{Grouping vector for the left side; defaults to NULL.}
+
+\item{grpRight}{Grouping vector for the right side; defaults to NULL.}
+
+\item{orthogonality}{Type of orthogonality constraint; defaults to "both".}
+
+\item{OrthSpaceLeft}{Orthogonal space for the left side; defaults to NULL.}
+
+\item{OrthSpaceRight}{Orthogonal space for the right side; defaults to NULL.}
+
+\item{projPriority}{Priority of the projection; defaults to "orth".}
+
+\item{projPriorityLeft}{Priority of the left projection; defaults to projPriority.}
+
+\item{projPriorityRight}{Priority of the right projection; defaults to projPriority.}
+
+\item{itermaxALS}{Maximum number of ALS iterations; defaults to 1000.}
+
+\item{itermaxPOCS}{Maximum number of POCS iterations; defaults to 1000.}
+
+\item{epsALS}{Convergence criterion for ALS; defaults to 1e-10.}
+
+\item{epsPOCS}{Convergence criterion for POCS; defaults to 1e-10.}
+}
+\value{
+Returns an object containing the results of the sparse partial least square correspondence analysis. This object includes results from the sparse generalized singular value decomposition (sparseGSVD) applied to X and Y, and additional data specific to the analysis.
 }
 \description{
-sparse Partial Least Square Correspondence anlaysis
+Performs sparse partial least square correspondence analysis (PLSCA) on two data matrices.
+}
+\examples{
+# Example usage of sparsePLSCA function
+# Assuming `X` and `Y` are data matrices
+\dontrun{result <- sparsePLSCA(X = X, Y = Y)}
+
 }

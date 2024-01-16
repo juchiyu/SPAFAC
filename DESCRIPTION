@@ -1,27 +1,37 @@
 Package: SPAFAC
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
+Title: Sparse component methods
+Version: 1.0.0
+Authors@R: c(
+    person(given = "Ju-Chi",
+           family = "Yu",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "ju-chi.yu@camh.ca",
+           comment = c(ORCID = "0000-0002-6360-1861")),
+    person(given = "Vincent",
+           family = "Guillemot",
+           role = "aut",
+           email = "vincent.guillemot@pasteur.fr",
+           comment = c(ORCID = "0000-0002-7421-0655")),
+    person(given = "Hervé",
+           family = "Abdi",
+           role = "aut",
+           email = "herve@utdallas.edu",
+           comment = c(ORCID = "0000-0002-9522-1978")))
+Description: The SPAFAC package contains wrapper functions to perform sparse
+    component based methods, such as sparse PCA, sparse CA, sparse MCA etc. 
+    It also provides reproducible examples with a few graphs.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.0
+Imports: GSVD, sGSVD, PTCA4CATA
 Suggests: 
     testthat,
     MASS,
     ExPosition,
     TExPosition,
     MExPosition,
-    GSVD,
-    sGSVD,
     FactoMineR,
     GPLS,
     corpcor,

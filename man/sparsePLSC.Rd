@@ -2,7 +2,7 @@
 % Please edit documentation in R/sPLSC.R
 \name{sparsePLSC}
 \alias{sparsePLSC}
-\title{sparse Partial Least Square Correlation}
+\title{Sparse Partial Least Square Correlation}
 \source{
 Some arguments of the function are inspired by the GPLS package by Derek Beaton.
 }
@@ -37,24 +37,67 @@ sparsePLSC(
 )
 }
 \arguments{
-\item{X}{Data matrix with \emph{I} rows and \emph{J} columns}
+\item{X}{Data matrix with I rows and J columns.}
 
-\item{Y}{Data matrix with \emph{I} rows and \emph{K} columns}
+\item{Y}{Data matrix with I rows and K columns.}
 
-\item{components}{the number of dimensions to extract}
+\item{components}{The number of dimensions to extract; defaults to 0.}
 
-\item{center_X}{For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.}
+\item{center_X}{Logical or numeric vector for centering each column of X; passed to \code{\link{scale}}.}
 
-\item{center_Y}{For the \code{Y} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{Y}.}
+\item{center_Y}{Logical or numeric vector for centering each column of Y; passed to \code{\link{scale}}.}
 
-\item{scale_X}{For the \code{X} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.}
+\item{scale_X}{Logical or numeric vector for scaling each column of X; passed to \code{\link{scale}}.}
 
-\item{scale_Y}{For the \code{Y} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{Y}.}
+\item{scale_Y}{Logical or numeric vector for scaling each column of Y; passed to \code{\link{scale}}.}
 
-\item{tol}{default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).}
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
 
-\item{epsPOCS}{}
+\item{init}{Initialization method; defaults to "svd".}
+
+\item{initLeft}{Initial values for the left side; defaults to NULL.}
+
+\item{initRight}{Initial values for the right side; defaults to NULL.}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rdsLeft}{Radii for the left side; defaults to rep(1, components).}
+
+\item{rdsRight}{Radii for the right side; defaults to rep(1, components).}
+
+\item{grpLeft}{Grouping vector for the left side; defaults to NULL.}
+
+\item{grpRight}{Grouping vector for the right side; defaults to NULL.}
+
+\item{orthogonality}{Type of orthogonality constraint; defaults to "both".}
+
+\item{OrthSpaceLeft}{Orthogonal space for the left side; defaults to NULL.}
+
+\item{OrthSpaceRight}{Orthogonal space for the right side; defaults to NULL.}
+
+\item{projPriority}{Priority of the projection; defaults to "orth".}
+
+\item{projPriorityLeft}{Priority of the left projection; defaults to projPriority.}
+
+\item{projPriorityRight}{Priority of the right projection; defaults to projPriority.}
+
+\item{itermaxALS}{Maximum number of ALS iterations; defaults to 1000.}
+
+\item{itermaxPOCS}{Maximum number of POCS iterations; defaults to 1000.}
+
+\item{epsALS}{Convergence criterion for ALS; defaults to 1e-10.}
+
+\item{epsPOCS}{Convergence criterion for POCS; defaults to 1e-10.}
+}
+\value{
+Returns an object containing the results of the sparse partial least square correlation analysis. This object includes results from the sparse generalized singular value decomposition (sparseGSVD) applied to X and Y, and additional data specific to the analysis.
 }
 \description{
-sparse Partial Least Square Correlation
+Performs sparse partial least square correlation analysis on two data matrices.
+}
+\examples{
+# Example usage of sparsePLSC function
+# Assuming `X` and `Y` are data matrices
+\dontrun{result <- sparsePLSC(X = X, Y = Y)}
+
 }

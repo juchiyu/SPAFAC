@@ -1,37 +1,47 @@
 #' Sparse DiSTATIS
 #'
-#' @param DATA a cube of distance matrix
-#' @param method "distance" or "covariance"
-#' @param masses.Cmat a vector of masses for the rows/columns of the rv matric. Default is set to "NULL" with all 1s.
-#' @param masses.Splus a vector of masses for the rows/columns of each table in the cube. Default is set to "NULL" with equal masses of 1/(the number of rows) being used.
-#' @param sparse.Cmat
-#' @param sparse.Splus
-#' @param components.Cmat
-#' @param components.Splus
-#' @param init.Cmat
-#' @param init.Splus
-#' @param seed
-#' @param grp.Cmat
-#' @param grp.Splus
-#' @param rds.Cmat
-#' @param rds.Splus
-#' @param orthogonality.Cmat
-#' @param OrthSpace.Cmat
-#' @param orthogonality.Splus
-#' @param OrthSpace.Splus
-#' @param projPriority.Cmat
-#' @param projPriority.Splus
-#' @param itermaxALS.Cmat
-#' @param itermaxPOCS.Cmat
-#' @param itermaxALS.Splus
-#' @param itermaxPOCS.Splus
-#' @param epsALS.Cmat
-#' @param epsPOCS.Cmat
-#' @param epsALS.Splus
-#' @param epsPOCS.Splus
-#' @param tol
+#' Performs Sparse DiSTATIS analysis on a cube of distance matrices.
 #'
-#' @example
+#' @param DATA A cube of distance matrices for analysis.
+#' @param method Method for analysis, either "distance" or "covariance".
+#' @param masses.Cmat A vector of masses for the rows/columns of the RV matrix; defaults to NULL with all 1s.
+#' @param masses.Splus A vector of masses for the rows/columns of each table in the cube; defaults to NULL with equal masses of 1/(number of rows).
+#' @param sparse.Cmat Logical indicating whether to apply sparsity on RV matrix; defaults to FALSE.
+#' @param sparse.Splus Logical indicating whether to apply sparsity on each table; defaults to TRUE.
+#' @param components.Cmat Number of components for RV matrix; defaults to 0.
+#' @param components.Splus Number of components for each table; defaults to 0.
+#' @param init.Cmat Initialization method for RV matrix; defaults to "svd".
+#' @param init.Splus Initialization method for each table; defaults to "svd".
+#' @param seed Seed for random number generation; defaults to NULL.
+#' @param grp.Cmat Grouping vector for the RV matrix; defaults to NULL.
+#' @param grp.Splus Grouping vector for each table; defaults to NULL.
+#' @param rds.Cmat Radii for the RV matrix; defaults to rep(1, components.Cmat).
+#' @param rds.Splus Radii for each table; defaults to rep(1, components.Splus).
+#' @param orthogonality.Cmat Type of orthogonality constraint for RV matrix; defaults to "loadings".
+#' @param OrthSpace.Cmat Orthogonal space for the RV matrix; defaults to NULL.
+#' @param orthogonality.Splus Type of orthogonality constraint for each table; defaults to "loadings".
+#' @param OrthSpace.Splus Orthogonal space for each table; defaults to NULL.
+#' @param projPriority.Cmat Priority of the projection for RV matrix; defaults to "orth".
+#' @param projPriority.Splus Priority of the projection for each table; defaults to "orth".
+#' @param itermaxALS.Cmat Maximum number of ALS iterations for RV matrix; defaults to 1000.
+#' @param itermaxPOCS.Cmat Maximum number of POCS iterations for RV matrix; defaults to 1000.
+#' @param itermaxALS.Splus Maximum number of ALS iterations for each table; defaults to 1000.
+#' @param itermaxPOCS.Splus Maximum number of POCS iterations for each table; defaults to 1000.
+#' @param epsALS.Cmat Convergence criterion for ALS for RV matrix; defaults to 1e-10.
+#' @param epsPOCS.Cmat Convergence criterion for POCS for RV matrix; defaults to 1e-10.
+#' @param epsALS.Splus Convergence criterion for ALS for each table; defaults to 1e-10.
+#' @param epsPOCS.Splus Convergence criterion for POCS for each table; defaults to 1e-10.
+#' @param tol Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.
+#'
+#' @return Returns an object containing the results of the Sparse DiSTATIS analysis, including results for both the RV matrix and each individual table, along with various parameters and settings used in the analysis.
+#'
+#' @export
+#'
+#' @examples
+#' # Example usage of sparseSTATIS function
+#' # Assuming `X` is a data matrix and `column.design` is the design vector
+#' \dontrun{result <- sparseDiSTATIS(X = X, column.design = column.design)}
+#'
 sparseDiSTATIS <- function(
   DATA,
   method = "distance", Cmat.is.RV = TRUE,

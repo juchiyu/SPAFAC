@@ -1,34 +1,40 @@
-#' Group sparse Multiple Correspondence Analysis
+#' Group Sparse Multiple Correspondence Analysis
 #'
-#' @param DATA the contingency table
-#' @param tol
-#' @param doublecentering
-#' @param init
-#' @param initLeft
-#' @param initRight
-#' @param seed
-#' @param rdsLeft
-#' @param rdsRight
-#' @param grpLeft the grouping vector for the rows
-#' @param grpRight the grouping vector for the columns
-#' @param orthogonality
-#' @param OrthSpaceLeft
-#' @param OrthSpaceRight
-#' @param projPriority
-#' @param projPriorityLeft
-#' @param projPriorityRight
-#' @param itermaxALS
-#' @param itermaxPOCS
-#' @param epsALS
-#' @param epsPOCS
-#' @param components
-#' @param make_data_nominal
-#' @param correction4SI
+#' Performs group sparse multiple correspondence analysis (MCA) on a given contingency table.
 #'
-#' @return
+#' @param DATA The contingency table for analysis.
+#' @param components The number of dimensions for the analysis; defaults to 0.
+#' @param tol Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.
+#' @param make_data_nominal Logical indicating whether to treat DATA as nominal (TRUE) or not (FALSE); defaults to TRUE.
+#' @param doublecentering Logical indicating whether double centering should be applied; defaults to TRUE.
+#' @param init Method for initialization; defaults to "svd".
+#' @param initLeft Initial values for the left side; defaults to NULL.
+#' @param initRight Initial values for the right side; defaults to NULL.
+#' @param seed Seed for random number generation; defaults to NULL.
+#' @param rdsLeft Radii for the left side; defaults to rep(1, components).
+#' @param rdsRight Radii for the right side; defaults to rep(1, components).
+#' @param grpLeft Grouping vector for the rows; defaults to NULL.
+#' @param grpRight Grouping vector for the columns; required if DATA is not treated as nominal.
+#' @param orthogonality Type of orthogonality constraint; defaults to "loadings".
+#' @param OrthSpaceLeft Orthogonal space for the left side; defaults to NULL.
+#' @param OrthSpaceRight Orthogonal space for the right side; defaults to NULL.
+#' @param projPriority Priority of the projection; defaults to "orth".
+#' @param projPriorityLeft Priority of the left projection; defaults to projPriority.
+#' @param projPriorityRight Priority of the right projection; defaults to projPriority.
+#' @param correction4SI Correction method for supplementary items; defaults to "mca".
+#' @param itermaxALS Maximum number of ALS iterations; defaults to 1000.
+#' @param itermaxPOCS Maximum number of POCS iterations; defaults to 1000.
+#' @param epsALS Convergence criterion for ALS; defaults to 1e-10.
+#' @param epsPOCS Convergence criterion for POCS; defaults to 1e-10.
+#'
+#' @return Returns an object of class c("sSVD", "sGSVD", "list") containing the results of the sparse multiple correspondence analysis. This object includes the results of sparse generalized singular value decomposition (sparseGSVD) and additional data specific to MCA.
+#'
 #' @export
 #'
 #' @examples
+#' # Example usage of sparseMCA function
+#' # Assuming `data` is a contingency table
+#' #' \dontrun{result <- sparseMCA(DATA = data)}
 sparseMCA <- function(
   DATA, components = 0, tol = .Machine$double.eps,
   make_data_nominal = TRUE, doublecentering = TRUE,

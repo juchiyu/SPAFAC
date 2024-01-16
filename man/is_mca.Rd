@@ -2,22 +2,24 @@
 % Please edit documentation in R/class_methods_helpers.R
 \name{is_mca}
 \alias{is_mca}
-\title{is_mca}
+\title{Check if an Object is of Class "MCA"}
 \usage{
 is_mca(x)
 }
 \arguments{
-\item{x}{object to test}
+\item{x}{object to test.}
 }
 \value{
-boolean. \code{TRUE} if the object is of class mca, FALSE otherwise.
+A logical value: \code{TRUE} if the object is of class "MCA", \code{FALSE} otherwise.
 }
 \description{
-Tests if the \code{x} object is of class type "mca"
+Tests if the provided object \code{x} is of class type "MCA".
 }
 \details{
-
+This function is useful for validating whether an object belongs to the class "MCA",
+which is relevant for functions in the \code{sGSVD} package, particularly for those performing
+discriminant multiple correspondence analysis, such as \code{sparseDiMCA}.
 }
 \seealso{
-\code{\link{inherits}}
+\code{\link{inherits}} for checking object inheritance.
 }

@@ -1,36 +1,41 @@
-#' sparse Multiple Factor Analysis
+#' Sparse Multiple Factor Analysis
 #'
-#' @param X Data matrix with \emph{I} rows and \emph{J} columns
-#' @param column.design
-#' @param components the number of dimensions to extract
-#' @param sparseOption "variable" or "subtable"
-#' @param center For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
-#' @param scale For the \code{X} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.
-#' @param tol default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).
-#' @param init
-#' @param initLeft
-#' @param initRight
-#' @param seed
-#' @param rdsLeft
-#' @param rdsRight
-#' @param grpLeft
-#' @param orthogonality
-#' @param OrthSpaceLeft
-#' @param OrthSpaceRight
-#' @param projPriority
-#' @param projPriorityLeft
-#' @param projPriorityRight
-#' @param itermaxALS
-#' @param itermaxPOCS
-#' @param epsALS
-#' @param epsPOCS
+#' Performs sparse multiple factor analysis (MFA) on a given data matrix.
 #'
-#' @return
+#' @param X Data matrix with I rows and J columns.
+#' @param column.design Design vector indicating the grouping of columns.
+#' @param components The number of dimensions to extract; defaults to 0.
+#' @param sparseOption "variable" or "subtable" indicating the sparsity option.
+#' @param center Logical or numeric vector for centering each column of X; passed to \code{\link{scale}}.
+#' @param scale Logical or numeric vector for scaling each column of X; passed to \code{\link{scale}}.
+#' @param tol Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.
+#' @param init Initialization method; defaults to "svd".
+#' @param initLeft Initial values for the left side; defaults to NULL.
+#' @param initRight Initial values for the right side; defaults to NULL.
+#' @param seed Seed for random number generation; defaults to NULL.
+#' @param rdsLeft Radii for the left side; defaults to rep(1, components).
+#' @param rdsRight Radii for the right side; defaults to rep(1, components).
+#' @param grpLeft Grouping vector for the left side; defaults to NULL.
+#' @param grpRight Grouping vector for the right side; based on sparseOption.
+#' @param orthogonality Type of orthogonality constraint; defaults to "loadings".
+#' @param OrthSpaceLeft Orthogonal space for the left side; defaults to NULL.
+#' @param OrthSpaceRight Orthogonal space for the right side; defaults to NULL.
+#' @param projPriority Priority of the projection; defaults to "orth".
+#' @param itermaxALS Maximum number of ALS iterations; defaults to 1000.
+#' @param itermaxPOCS Maximum number of POCS iterations; defaults to 1000.
+#' @param epsALS Convergence criterion for ALS; defaults to 1e-10.
+#' @param epsPOCS Convergence criterion for POCS; defaults to 1e-10.
+#'
+#' @return Returns an object containing the results of the sparse MFA analysis. This object includes the results of sparse generalized singular value decomposition (sparseGSVD) and additional data specific to MFA.
+#'
 #' @export
 #'
 #' @source Some lines of the function are inspired by the MExPosition package by Derek Beaton and Cherise Chin Fatt.
 #' @examples
-
+#' # Example usage of sparseMFA function
+#' # Assuming `data` is a data matrix and `column.design` is the design vector
+#' \dontrun{result <- sparseMFA(X = data, column.design = column.design)}
+#'
 sparseMFA <- function(X, column.design, components = 0,
                       sparseOption = "variable",
                        center = TRUE, scale = TRUE, mfa.scale = TRUE,

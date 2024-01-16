@@ -2,7 +2,7 @@
 % Please edit documentation in R/sDICA.R
 \name{sparseDiCA}
 \alias{sparseDiCA}
-\title{Group sparse Discriminant Correspondence Analysis}
+\title{Group Sparse Discriminant Correspondence Analysis}
 \usage{
 sparseDiCA(
   DATA,
@@ -34,18 +34,74 @@ sparseDiCA(
 )
 }
 \arguments{
-\item{DATA}{the contingency table}
+\item{DATA}{The contingency table for analysis.}
 
-\item{design}{the design vector of the observations (i.e., the rows) of DATA}
+\item{design}{The design vector of the observations (i.e., the rows) of DATA.}
 
-\item{components}{}
+\item{ca.type}{Type of correspondence analysis to use, either "mca" for multiple correspondence analysis or "sca" for simple correspondence analysis; defaults to "mca".}
 
-\item{make_data_nominal}{(TRUE or FALSE)}
+\item{components}{The number of dimensions for the analysis; defaults to 0.}
 
-\item{grpLeft}{the grouping vector for the rows}
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
 
-\item{grpRight}{the grouping vector for the columns}
+\item{make_data_nominal}{Logical indicating whether to treat data as nominal (TRUE) or not (FALSE); defaults to TRUE.}
+
+\item{make_design_nominal}{Logical indicating whether to treat design as nominal (TRUE) or not (FALSE); defaults to TRUE.}
+
+\item{doublecentering}{Logical indicating whether double centering should be applied; defaults to TRUE.}
+
+\item{init}{Method for initialization; defaults to "svd".}
+
+\item{initLeft}{Initial values for the left side; defaults to NULL.}
+
+\item{initRight}{Initial values for the right side; defaults to NULL.}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rdsLeft}{Radii for the left side; defaults to rep(1, components).}
+
+\item{rdsRight}{Radii for the right side; defaults to rep(1, components).}
+
+\item{grpLeft}{Grouping vector for the rows; defaults to NULL.}
+
+\item{grpRight}{Grouping vector for the columns; defaults to NULL.}
+
+\item{orthogonality}{Type of orthogonality constraint; defaults to "loadings".}
+
+\item{OrthSpaceLeft}{Orthogonal space for the left side; defaults to NULL.}
+
+\item{OrthSpaceRight}{Orthogonal space for the right side; defaults to NULL.}
+
+\item{projPriority}{Priority of the projection; defaults to "orth".}
+
+\item{projPriorityLeft}{Priority of the left projection; defaults to projPriority.}
+
+\item{projPriorityRight}{Priority of the right projection; defaults to projPriority.}
+
+\item{itermaxALS}{Maximum number of ALS iterations; defaults to 1000.}
+
+\item{itermaxPOCS}{Maximum number of POCS iterations; defaults to 1000.}
+
+\item{epsALS}{Convergence criterion for ALS; defaults to 1e-10.}
+
+\item{epsPOCS}{Convergence criterion for POCS; defaults to 1e-10.}
+}
+\value{
+Returns an object containing the results of the group sparse discriminant correspondence analysis. The specific type of analysis and the results structure depend on the \code{ca.type} parameter.
 }
 \description{
-Group sparse Discriminant Correspondence Analysis
+Performs group sparse discriminant correspondence analysis (DiCA) on a given contingency table, using either multiple correspondence analysis (DiMCA) or simple correspondence analysis (DiSCA) based on the specified \code{ca.type}.
+}
+\examples{
+\dontrun{
+res.sdisca <- sparseDiCA(DATA = FrEnAuthors.unblnc,
+  design = data.dx.unblnc$GroupDiCA.recode,
+  ca.type = "sca", components = kopt,
+  make_design_nominal = TRUE,
+  rdsLeft = rep(rdsleftopt, K),
+  rdsRight = rep(rdsrightopt, K),
+  initLeft = U0, initRight = V0,
+  grpLeft = NULL, grpRight = NULL)
+}
+
 }

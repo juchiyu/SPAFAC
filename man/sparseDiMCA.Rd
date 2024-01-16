@@ -2,7 +2,7 @@
 % Please edit documentation in R/sDIMCA.R
 \name{sparseDiMCA}
 \alias{sparseDiMCA}
-\title{Group sparse Discriminant Correspondence Analysis for MCA}
+\title{Group Sparse Discriminant Correspondence Analysis for MCA}
 \usage{
 sparseDiMCA(
   DATA,
@@ -33,8 +33,66 @@ sparseDiMCA(
 )
 }
 \arguments{
-\item{epsPOCS}{}
+\item{DATA}{The contingency table for analysis.}
+
+\item{design}{The design vector of the observations (rows) of DATA.}
+
+\item{components}{The number of dimensions for the analysis; defaults to 0.}
+
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
+
+\item{make_data_nominal}{Logical indicating whether to treat DATA as nominal (TRUE) or not (FALSE); defaults to TRUE.}
+
+\item{make_design_nominal}{Logical indicating whether to treat design vector as nominal (TRUE) or not (FALSE); defaults to TRUE.}
+
+\item{doublecentering}{Logical indicating whether double centering should be applied; defaults to TRUE.}
+
+\item{init}{Method for initialization; defaults to "svd".}
+
+\item{initLeft}{Initial values for the left side; defaults to NULL.}
+
+\item{initRight}{Initial values for the right side; defaults to NULL.}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rdsLeft}{Radii for the left side; defaults to rep(1, components).}
+
+\item{rdsRight}{Radii for the right side; defaults to rep(1, components).}
+
+\item{grpLeft}{Grouping vector for the rows; defaults to NULL.}
+
+\item{grpRight}{Grouping vector for the columns; required if DATA is not treated as nominal.}
+
+\item{orthogonality}{Type of orthogonality constraint; defaults to "loadings".}
+
+\item{OrthSpaceLeft}{Orthogonal space for the left side; defaults to NULL.}
+
+\item{OrthSpaceRight}{Orthogonal space for the right side; defaults to NULL.}
+
+\item{projPriority}{Priority of the projection; defaults to "orth".}
+
+\item{projPriorityLeft}{Priority of the left projection; defaults to projPriority.}
+
+\item{projPriorityRight}{Priority of the right projection; defaults to projPriority.}
+
+\item{itermaxALS}{Maximum number of ALS iterations; defaults to 1000.}
+
+\item{itermaxPOCS}{Maximum number of POCS iterations; defaults to 1000.}
+
+\item{epsALS}{Convergence criterion for ALS; defaults to 1e-10.}
+
+\item{epsPOCS}{Convergence criterion for POCS; defaults to 1e-10.}
+}
+\value{
+Returns an object of class c("sSVD", "sGSVD", "MCA", "discriminant", "list") containing the results of the analysis. This object includes the results of sparse generalized singular value decomposition (sparseGSVD) and additional data specific to discriminant MCA.
 }
 \description{
-Group sparse Discriminant Correspondence Analysis for MCA
+Performs group sparse discriminant correspondence analysis specifically for multiple correspondence analysis (MCA) on a given contingency table.
+}
+\examples{
+\dontrun{
+# Example usage of sparseDiMCA function
+# Assuming `data` is a contingency table and `design` is the design vector
+result <- sparseDiMCA(DATA = data, design = design)
+}
 }

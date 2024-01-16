@@ -129,18 +129,22 @@ is_sca <- function(x){
   inherits(x, "SCA")
 }
 
-#' is_mca
+
+#' Check if an Object is of Class "MCA"
 #'
-#' Tests if the \code{x} object is of class type "mca"
-#' @details The functions in the \code{sGSVD} package that perform discriminant multiple correspondence analysis. The function is \code{\link{sparseDiMCA}.
+#' Tests if the provided object `x` is of class type "MCA".
 #'
-#' @param x object to test
-#' @return boolean. \code{TRUE} if the object is of class mca, FALSE otherwise.
+#' @details This function is useful for validating whether an object belongs to the class "MCA",
+#' which is relevant for functions in the `sGSVD` package, particularly for those performing
+#' discriminant multiple correspondence analysis, such as `sparseDiMCA`.
 #'
-#' @seealso \code{\link{inherits}}
+#' @param x object to test.
+#' @return A logical value: `TRUE` if the object is of class "MCA", `FALSE` otherwise.
+#'
+#' @seealso \code{\link{inherits}} for checking object inheritance.
 #'
 #' @export
-is_mca <- function(x){
+is_mca <- function(x) {
   inherits(x, "MCA")
 }
 

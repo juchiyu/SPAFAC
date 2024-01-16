@@ -39,16 +39,75 @@ sparseDiSTATIS(
 )
 }
 \arguments{
-\item{DATA}{a cube of distance matrix}
+\item{DATA}{A cube of distance matrices for analysis.}
 
-\item{method}{"distance" or "covariance"}
+\item{method}{Method for analysis, either "distance" or "covariance".}
 
-\item{masses.Cmat}{a vector of masses for the rows/columns of the rv matric. Default is set to "NULL" with all 1s.}
+\item{masses.Cmat}{A vector of masses for the rows/columns of the RV matrix; defaults to NULL with all 1s.}
 
-\item{masses.Splus}{a vector of masses for the rows/columns of each table in the cube. Default is set to "NULL" with equal masses of 1/(the number of rows) being used.}
+\item{masses.Splus}{A vector of masses for the rows/columns of each table in the cube; defaults to NULL with equal masses of 1/(number of rows).}
 
-\item{tol}{}
+\item{sparse.Cmat}{Logical indicating whether to apply sparsity on RV matrix; defaults to FALSE.}
+
+\item{sparse.Splus}{Logical indicating whether to apply sparsity on each table; defaults to TRUE.}
+
+\item{components.Cmat}{Number of components for RV matrix; defaults to 0.}
+
+\item{components.Splus}{Number of components for each table; defaults to 0.}
+
+\item{init.Cmat}{Initialization method for RV matrix; defaults to "svd".}
+
+\item{init.Splus}{Initialization method for each table; defaults to "svd".}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{grp.Cmat}{Grouping vector for the RV matrix; defaults to NULL.}
+
+\item{grp.Splus}{Grouping vector for each table; defaults to NULL.}
+
+\item{rds.Cmat}{Radii for the RV matrix; defaults to rep(1, components.Cmat).}
+
+\item{rds.Splus}{Radii for each table; defaults to rep(1, components.Splus).}
+
+\item{orthogonality.Cmat}{Type of orthogonality constraint for RV matrix; defaults to "loadings".}
+
+\item{OrthSpace.Cmat}{Orthogonal space for the RV matrix; defaults to NULL.}
+
+\item{orthogonality.Splus}{Type of orthogonality constraint for each table; defaults to "loadings".}
+
+\item{OrthSpace.Splus}{Orthogonal space for each table; defaults to NULL.}
+
+\item{projPriority.Cmat}{Priority of the projection for RV matrix; defaults to "orth".}
+
+\item{projPriority.Splus}{Priority of the projection for each table; defaults to "orth".}
+
+\item{itermaxALS.Cmat}{Maximum number of ALS iterations for RV matrix; defaults to 1000.}
+
+\item{itermaxPOCS.Cmat}{Maximum number of POCS iterations for RV matrix; defaults to 1000.}
+
+\item{itermaxALS.Splus}{Maximum number of ALS iterations for each table; defaults to 1000.}
+
+\item{itermaxPOCS.Splus}{Maximum number of POCS iterations for each table; defaults to 1000.}
+
+\item{epsALS.Cmat}{Convergence criterion for ALS for RV matrix; defaults to 1e-10.}
+
+\item{epsPOCS.Cmat}{Convergence criterion for POCS for RV matrix; defaults to 1e-10.}
+
+\item{epsALS.Splus}{Convergence criterion for ALS for each table; defaults to 1e-10.}
+
+\item{epsPOCS.Splus}{Convergence criterion for POCS for each table; defaults to 1e-10.}
+
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
+}
+\value{
+Returns an object containing the results of the Sparse DiSTATIS analysis, including results for both the RV matrix and each individual table, along with various parameters and settings used in the analysis.
 }
 \description{
-Sparse DiSTATIS
+Performs Sparse DiSTATIS analysis on a cube of distance matrices.
+}
+\examples{
+# Example usage of sparseSTATIS function
+# Assuming `X` is a data matrix and `column.design` is the design vector
+\dontrun{result <- sparseDiSTATIS(X = X, column.design = column.design)}
+
 }

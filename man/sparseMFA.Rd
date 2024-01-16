@@ -2,7 +2,7 @@
 % Please edit documentation in R/sMFA.R
 \name{sparseMFA}
 \alias{sparseMFA}
-\title{sparse Multiple Factor Analysis}
+\title{Sparse Multiple Factor Analysis}
 \source{
 Some lines of the function are inspired by the MExPosition package by Derek Beaton and Cherise Chin Fatt.
 }
@@ -37,20 +37,61 @@ sparseMFA(
 )
 }
 \arguments{
-\item{X}{Data matrix with \emph{I} rows and \emph{J} columns}
+\item{X}{Data matrix with I rows and J columns.}
 
-\item{components}{the number of dimensions to extract}
+\item{column.design}{Design vector indicating the grouping of columns.}
 
-\item{sparseOption}{"variable" or "subtable"}
+\item{components}{The number of dimensions to extract; defaults to 0.}
 
-\item{center}{For the \code{X} matrix: A parameter to pass through to \code{center} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.}
+\item{sparseOption}{"variable" or "subtable" indicating the sparsity option.}
 
-\item{scale}{For the \code{X} matrix: A parameter to pass through to \code{scale} in \code{\link{scale}} function; either a logical value or numeric-alike vector of length equal to the number of columns of \code{X}.}
+\item{center}{Logical or numeric vector for centering each column of X; passed to \code{\link{scale}}.}
 
-\item{tol}{default is .Machine$double.eps. A parameter to pass through to \code{\link[GSVD]{gplssvd}}; eliminates singular values that are effectively zero (and thus drops null components).}
+\item{scale}{Logical or numeric vector for scaling each column of X; passed to \code{\link{scale}}.}
 
-\item{epsPOCS}{}
+\item{tol}{Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.}
+
+\item{init}{Initialization method; defaults to "svd".}
+
+\item{initLeft}{Initial values for the left side; defaults to NULL.}
+
+\item{initRight}{Initial values for the right side; defaults to NULL.}
+
+\item{seed}{Seed for random number generation; defaults to NULL.}
+
+\item{rdsLeft}{Radii for the left side; defaults to rep(1, components).}
+
+\item{rdsRight}{Radii for the right side; defaults to rep(1, components).}
+
+\item{grpLeft}{Grouping vector for the left side; defaults to NULL.}
+
+\item{grpRight}{Grouping vector for the right side; based on sparseOption.}
+
+\item{orthogonality}{Type of orthogonality constraint; defaults to "loadings".}
+
+\item{OrthSpaceLeft}{Orthogonal space for the left side; defaults to NULL.}
+
+\item{OrthSpaceRight}{Orthogonal space for the right side; defaults to NULL.}
+
+\item{projPriority}{Priority of the projection; defaults to "orth".}
+
+\item{itermaxALS}{Maximum number of ALS iterations; defaults to 1000.}
+
+\item{itermaxPOCS}{Maximum number of POCS iterations; defaults to 1000.}
+
+\item{epsALS}{Convergence criterion for ALS; defaults to 1e-10.}
+
+\item{epsPOCS}{Convergence criterion for POCS; defaults to 1e-10.}
+}
+\value{
+Returns an object containing the results of the sparse MFA analysis. This object includes the results of sparse generalized singular value decomposition (sparseGSVD) and additional data specific to MFA.
 }
 \description{
-sparse Multiple Factor Analysis
+Performs sparse multiple factor analysis (MFA) on a given data matrix.
+}
+\examples{
+# Example usage of sparseMFA function
+# Assuming `data` is a data matrix and `column.design` is the design vector
+\dontrun{result <- sparseMFA(X = data, column.design = column.design)}
+
 }

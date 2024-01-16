@@ -1,4 +1,8 @@
 url: ~
+
 template:
   bootstrap: 5
 
+home:
+  title: "SPAFAC - an R package for sparse factor methods"
+  description: SPAFAC is an R package that contains methods for sparse component methods, such as sparse principal component analysis, sparse correspondence analysis etc.

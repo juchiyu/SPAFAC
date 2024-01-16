@@ -1,34 +1,45 @@
-#' sparse Partial Least Square Correspondence anlaysis
+#' Sparse Partial Least Square Correspondence Analysis
 #'
-#' @param DATA the contingency table
-#' @param k the number of dimensions
-#' @param doublecentering_X
-#' @param doublecentering_Y
-#' @param tol
-#' @param init
-#' @param initLeft
-#' @param initRight
-#' @param seed
-#' @param rdsLeft
-#' @param rdsRight
-#' @param grpLeft
-#' @param grpRight
-#' @param orthogonality
-#' @param OrthSpaceLeft
-#' @param OrthSpaceRight
-#' @param projPriority
-#' @param projPriorityLeft
-#' @param projPriorityRight
-#' @param itermaxALS
-#' @param itermaxPOCS
-#' @param epsALS
-#' @param epsPOCS
+#' Performs sparse partial least square correspondence analysis (PLSCA) on two data matrices.
 #'
-#' @return
+#' @param X Data matrix with I rows and J columns.
+#' @param Y Data matrix with I rows and K columns.
+#' @param Mx Diagonal weight matrix for rows of X; defaults to NULL.
+#' @param My Diagonal weight matrix for rows of Y; defaults to NULL.
+#' @param Wx Diagonal weight matrix for columns of X; defaults to NULL.
+#' @param Wy Diagonal weight matrix for columns of Y; defaults to NULL.
+#' @param components The number of dimensions to extract; defaults to 2.
+#' @param tol Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.
+#' @param doublecentering_X Logical indicating whether to apply double centering on X; defaults to TRUE.
+#' @param doublecentering_Y Logical indicating whether to apply double centering on Y; defaults to TRUE.
+#' @param init Initialization method; defaults to "svd".
+#' @param initLeft Initial values for the left side; defaults to NULL.
+#' @param initRight Initial values for the right side; defaults to NULL.
+#' @param seed Seed for random number generation; defaults to NULL.
+#' @param rdsLeft Radii for the left side; defaults to rep(1, components).
+#' @param rdsRight Radii for the right side; defaults to rep(1, components).
+#' @param grpLeft Grouping vector for the left side; defaults to NULL.
+#' @param grpRight Grouping vector for the right side; defaults to NULL.
+#' @param orthogonality Type of orthogonality constraint; defaults to "both".
+#' @param OrthSpaceLeft Orthogonal space for the left side; defaults to NULL.
+#' @param OrthSpaceRight Orthogonal space for the right side; defaults to NULL.
+#' @param projPriority Priority of the projection; defaults to "orth".
+#' @param projPriorityLeft Priority of the left projection; defaults to projPriority.
+#' @param projPriorityRight Priority of the right projection; defaults to projPriority.
+#' @param itermaxALS Maximum number of ALS iterations; defaults to 1000.
+#' @param itermaxPOCS Maximum number of POCS iterations; defaults to 1000.
+#' @param epsALS Convergence criterion for ALS; defaults to 1e-10.
+#' @param epsPOCS Convergence criterion for POCS; defaults to 1e-10.
+#'
+#' @return Returns an object containing the results of the sparse partial least square correspondence analysis. This object includes results from the sparse generalized singular value decomposition (sparseGSVD) applied to X and Y, and additional data specific to the analysis.
+#'
 #' @export
 #'
 #' @examples
-
+#' # Example usage of sparsePLSCA function
+#' # Assuming `X` and `Y` are data matrices
+#' \dontrun{result <- sparsePLSCA(X = X, Y = Y)}
+#'
 sparsePLSCA <- function(X, Y, Mx = NULL, My = NULL, Wx = NULL, Wy = NULL, components = 2L, tol = .Machine$double.eps,
                         doublecentering_X = TRUE, doublecentering_Y = TRUE,
                         init = "svd", initLeft = NULL, initRight = NULL, seed = NULL,
