@@ -9,9 +9,22 @@ A data frame where each row represents a literary work and includes
 the following columns for punctuation mark counts: \code{Comma}, \code{Period}, \code{QuestionMark},
 \code{ExclamationMark}, \code{Colon}, \code{Semicolon}, \code{Apostrophe}, \code{EnglishQuotes}, \code{FrenchQuotes},
 \code{Dash}, \code{MDash}, along with metadata about the work such as \code{Author}, \code{Country}, and \code{Period}.
+
+\subsection{\code{example2_sDiSCA}}{
+
+A data frame
+\describe{
+\item{country}{Country name}
+\item{iso2, iso3}{2 & 3 letter ISO country codes}
+\item{year}{Year}
+...
+}
+}
 }
 \source{
 Project Gutenberg, processed using the \code{gutenbergr} R package.
+
+https://www.gutenberg.org/
 }
 \usage{
 example2_sDiSCA

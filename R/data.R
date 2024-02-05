@@ -1,4 +1,5 @@
 #' USA Deaths in 2018 by Age and Cause
+#' Causes of death in the US in 2019
 #'
 #' This dataset contains information on the number of deaths in the USA in 2018,
 #' categorized by age and cause of death. The causes of death are classified
@@ -46,6 +47,15 @@
 #' @references
 #' Robinson, D. (2021). gutenbergr: Download and Process Public Domain Works from Project Gutenberg. R package version 0.2.0.
 #' \url{https://CRAN.R-project.org/package=gutenbergr}
+#' @format ## `example2_sDiSCA`
+#' A data frame
+#' \describe{
+#'   \item{country}{Country name}
+#'   \item{iso2, iso3}{2 & 3 letter ISO country codes}
+#'   \item{year}{Year}
+#'   ...
+#' }
+#' @source https://www.gutenberg.org/
 "example2_sDiSCA"
 
 #' Chinese Version of the Independent and Interdependent Self Scale (C-IISS) Dataset

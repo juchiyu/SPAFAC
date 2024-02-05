@@ -3,7 +3,8 @@
 \docType{data}
 \name{example1_sCA}
 \alias{example1_sCA}
-\title{USA Deaths in 2018 by Age and Cause}
+\title{USA Deaths in 2018 by Age and Cause
+Causes of death in the US in 2019}
 \format{
 A data frame with 399 rows and 3 columns:
 \describe{
