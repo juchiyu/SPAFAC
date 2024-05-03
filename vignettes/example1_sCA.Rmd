@@ -23,6 +23,11 @@ library(ggplot2)
 We begin by loading the `SPAFAC` package and the data.
 
 ```{r load}
+library(aplot)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggtree)
 library(sGSVD)
 library(SPAFAC)
 library(PTCA4CATA)
@@ -38,11 +43,49 @@ J <- ncol(death.2019)
 
 
 
-```{r}
-death.burt <- t(death.2019) %*% death.2019
-death.phi <- data4PCCAR::phi2Mat4BurtTable(death.2019)$phi2.mat
+```{r heatmap}
+colprofiles <- prop.table(death.2019, margin = 2)
 
-pheatmap::pheatmap(log10(death.2019 + 1), cluster_rows = FALSE, cluster_cols = TRUE, border_color = "white", color = colorRampPalette(c("white", "orchid3", "mediumorchid4"))(50))
+d.m <- as_tibble(
+  colprofiles, 
+  rownames = "row") %>%
+  pivot_longer(
+    -1,
+    names_to = "col") %>%
+  mutate(row = factor(
+    row, 
+    levels = c("1-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", 
+    "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", 
+    "70-74", "75-79", "80-84", "85-89", "90-94", "95-99", "100+")))
+
+chi2_distmat <- as.dist(sqrt(DistatisR::Chi2Dist(t(death.2019))$Distance))
+
+dend.death <- hclust(
+  chi2_distmat,
+  method = "ward.D2")
+
+gtree <- ggtree(
+  dend.death,
+  color = "darkolivegreen",
+  hang = 0) + 
+    layout_dendrogram()
+
+hm <- d.m %>%
+  ggplot(aes(col, row, fill = value)) + 
+  geom_tile() + 
+  scale_fill_gradient(
+    # transform = "log10",
+    low = "white", high =  "darkorchid") +
+    theme_minimal() +
+    theme(
+      text = element_text(color = "darkolivegreen"),
+      axis.text.x = element_text(angle = 45, hjust = 1, color = "darkolivegreen"),
+      axis.text.y = element_text(color = "darkolivegreen"),
+      axis.ticks = element_line(color = "darkolivegreen")) +
+    labs(x = "", y = "", fill = "")
+
+(hm %>% insert_top(gtree, height = 0.2)) 
+  
 ```
 
 

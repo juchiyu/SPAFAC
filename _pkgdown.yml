@@ -2,7 +2,41 @@ url: ~
 
 template:
   bootstrap: 5
+  bootswatch: sandstone
 
 home:
   title: "SPAFAC - an R package for sparse factor methods"
   description: SPAFAC is an R package that contains methods for sparse component methods, such as sparse principal component analysis, sparse correspondence analysis etc.
+
+reference:
+- title: "Sparse Factor Analyses"
+  desc: >
+    Each function aims at performing one particular sparse component-based method.
+  contents:
+   - sparseCA
+   - sparseDiCA
+   - sparseDiMCA
+   - sparseDiSCA
+   - sparseDiSTATIS
+   - sparseMCA
+   - sparseMDS
+   - sparseMFA
+   - sparsePLSC
+   - sparsePLSCA
+   - sparseSTATIS
+- title: "Utility functions"
+  desc: >
+    Internal functions, use with caution! Note to dev. team: think about hiding them.
+  contents:
+   - tab_disjonctif
+   - is_GSVD
+   - is_discriminant
+   - is_mca
+   - is_multitab
+   - is_sEIGEN
+   - is_sGEIGEN
+   - is_sGPCA
+   - is_sGSVD
+   - is_sMDS
+   - is_spls
+   - is_sSVD
