@@ -165,33 +165,50 @@ sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE, Cmat.is.RV = TR
         epsALS = epsALS.Cmat, epsPOCS = epsPOCS.Cmat)
 
       nonzero.relative.ind.list[[i]] <- which(sEIG.Cmat[[i]]$u[,1] != 0)
-      if (length(nonzero.relative.ind.list[[i]]) == 0) stop("Something went wrong !")
+      if (length(nonzero.relative.ind.list[[i]]) == 0) stop("Something went wrong! No element is larger than 0 in the eigenvector of RV.")
       Cmat.tmp <- Cmat.tmp[-nonzero.relative.ind.list[[i]], -nonzero.relative.ind.list[[i]]]
       masses.Cmat.tmp <- masses.Cmat.tmp[-nonzero.relative.ind.list[[i]]]
-      if (any(dim(Cmat.tmp) == 0)) stop("Something else went wrong !")
+      if (any(dim(Cmat.tmp) == 0)) stop("Something else went wrong for masses of C because no element is selected according to the sparse RV.")
     }
+    # the non-negative eigenvectors
     reference <- 1:nrow(Cmat)
     nonzero.abs.ind.list <- vector("list", length(nonzero.relative.ind.list))
     for (i in 1:components.Cmat) {
       nonzero.abs.ind.list[[i]] <- reference[nonzero.relative.ind.list[[i]]]
       reference <- reference[-nonzero.relative.ind.list[[i]]]
     }
+    # create the U matrix to save the sparsified eigenvector for each subspace
     U <- matrix(0, nrow = nrow(Cmat), ncol = components.Cmat, dimnames = list(rownames(Cmat), paste0("Dim", 1:components.Cmat)))
-    U[, 1] <- sEIG.Cmat[[1]]$u[, 1]
+    # for only one subspace
+    U[, 1] <- abs(sEIG.Cmat[[1]]$u[, 1]) # flip to positive if they came out negative
+    # for more than 1 subspace
     if (components.Cmat > 1) {
       for (i in 2:components.Cmat) {
-        U[-nonzero.abs.ind.list[[i - 1]], i] <- sEIG.Cmat[[i]]$u[, 1]
+        U[-nonzero.abs.ind.list[[i - 1]], i] <- abs(sEIG.Cmat[[i]]$u[, 1])
       }
     }
+    # create list to save iter, SI, fit ratio, and zero ratio for each subspace
+    iter.save <- SI.save <- fitRatio.save <- zeroRatio.save <- list()
+    # save output
+    for (i in 1:components.Cmat) {
+      iter.save[[paste0("Subspace.",i)]] <- sEIG.Cmat[[i]]$iter[1,]
+      SI.save[[paste0("Subspace.",i)]] <- sEIG.Cmat[[i]]$SI$SI[1]
+      fitRatio.save[[paste0("Subspace.",i)]] <- sEIG.Cmat[[i]]$SI$fitRatio[1]
+      zeroRatio.save[[paste0("Subspace.",i)]] <- sEIG.Cmat[[i]]$SI$zeroRatio[1]
+    }
+
     values <- diag(t(U) %*% Cmat %*% U)
+
     sEIG.Cmat <- list(values = values,
                       l = values,
                       vectors = U,
                       u = U,
                       rds = rds.Cmat,
                       f = t(t(U * masses.Cmat) * sqrt(values)),
-                      iter = NULL,
-                      SI = NULL)
+                      iter = iter.save,
+                      SI = SI.save,
+                      fitRatio = fitRatio.save,
+                      zeroRatio = zeroRatio.save)
   }else{
     ## plain (generalized) eigen
     if (!is.null(masses.Cmat)){
@@ -217,13 +234,20 @@ sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE, Cmat.is.RV = TR
                       rds = rds.Cmat,
                       f = t(t(eigen.Cmat$vectors * masses.Cmat) * sqrt(eigen.Cmat$values)),
                       iter = NULL,
-                      SI = NULL)
+                      SI = NULL,
+                      fitRatio = NULL,
+                      zeroRatio = NULL)
   }
 
   ## get alphas
+  if (sparse.Cmat){ # if we sparsified the RV space
+    # alphs for difference subspace are stored in different columns
+    alpha4grandX <- sweep(sEIG.Cmat$vectors,2,colSums(sEIG.Cmat$vectors),`/`)
+  }else{ # if we run a plain eigen on the RV space
+    alpha4grandX <- sEIG.Cmat$vectors[,1]/sum(sEIG.Cmat$vectors[,1])
+  }
 
-  alpha4grandX <- sEIG.Cmat$vectors[,1]/sum(sEIG.Cmat$vectors[,1])
-  ### LEFT HERE!
+  ### Check parameters for sparsifying the grand table
   if (sparse.grandX){
     if (sparseOption == "variable"){
       grpRight = NULL
@@ -235,21 +259,34 @@ sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE, Cmat.is.RV = TR
     rdsRight.grandX = ncol(data.proc)
   }
 
-
   LW <- rep(1/nrow(data.proc), nrow(data.proc))
   RW <- alpha4grandX
 
-  sGSVD.res <- sparseGSVD(X = data.proc, LW = LW, RW = RW, k = components.grandX,
-                          init = init.grandX, initLeft = initLeft.grandX, initRight = initRight.grandX, seed = seed,
-                          rdsLeft = rdsLeft.grandX, rdsRight = rdsRight.grandX,
-                          grpLeft = grpLeft.grandX, grpRight = grpRight.grandX,
-                          orthogonality = orthogonality.grandX,
-                          OrthSpaceLeft = OrthSpaceLeft.grandX, OrthSpaceRight = OrthSpaceRight.grandX,
-                          projPriority = projPriority.grandX,
-                          projPriorityLeft = projPriorityLeft.grandX,
-                          projPriorityRight = projPriorityLeft.grandX,
-                          itermaxALS = itermaxALS.grandX, itermaxPOCS = itermaxPOCS.grandX,
-                          epsALS = epsALS.grandX, epsPOCS = epsPOCS.grandX)
+  if (sparse.grandX == TRUE){
+    if (sparse.Cmat == TRUE){ # if we sparsify both RV and compromise
+
+    }else{ # if we only sparsify the compromise
+      sGSVD.res <- sparseGSVD(X = data.proc, LW = LW, RW = RW, k = components.grandX,
+                              init = init.grandX, initLeft = initLeft.grandX, initRight = initRight.grandX, seed = seed,
+                              rdsLeft = rdsLeft.grandX, rdsRight = rdsRight.grandX,
+                              grpLeft = grpLeft.grandX, grpRight = grpRight.grandX,
+                              orthogonality = orthogonality.grandX,
+                              OrthSpaceLeft = OrthSpaceLeft.grandX, OrthSpaceRight = OrthSpaceRight.grandX,
+                              projPriority = projPriority.grandX,
+                              projPriorityLeft = projPriorityLeft.grandX,
+                              projPriorityRight = projPriorityLeft.grandX,
+                              itermaxALS = itermaxALS.grandX, itermaxPOCS = itermaxPOCS.grandX,
+                              epsALS = epsALS.grandX, epsPOCS = epsPOCS.grandX)
+
+    }
+  }else{
+    if (sparse.Cmat){ # if we only sparsify the RV (therefore still with the subspaces)
+
+    }else{ # if there is no sparsification
+
+    }
+   }
+
 
   class(sGSVD.res) <- c("sSVD", "sGSVD", "sEIGEN", "sGEIGEN", "sGPCA", "MultiTab", "list")
 
