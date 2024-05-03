@@ -24,14 +24,6 @@ reference:
    - sparsePLSC
    - sparsePLSCA
    - sparseSTATIS
-- title: "Examples"
-  desc: >
-    Each example illustrates a sparse factor analysis.
-  contents:
-   - example1_sCA
-   - example2_sDiSCA
-   - example3_sMCA
-   - example4_sDiMCA
 - title: "Utility functions"
   desc: >
     Internal functions, use with caution! Note to dev. team: think about hiding them.
@@ -46,6 +38,5 @@ reference:
    - is_sGPCA
    - is_sGSVD
    - is_sMDS
-   - is_sPLS
+   - is_spls
    - is_sSVD
-   - is_sca

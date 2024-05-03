@@ -12,39 +12,34 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
 
-## Setup
-
-```{r}
 library(ggplot2)
-```
-
-We begin by loading the `SPAFAC` package and the data.
-
-```{r load}
 library(aplot)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(ggtree)
 library(sGSVD)
-library(SPAFAC)
 library(PTCA4CATA)
-data("example1_sCA")
-
-death.2019 <- t(as.matrix(example1_sCA))
-I <- nrow(death.2019)
-J <- ncol(death.2019)
-
 ```
 
+## Setup
 
+We begin by loading the `SPAFAC` package and the data.
 
+```{r load}
+library(SPAFAC)
+data("example1_sCA")
 
+example1_sCA
+I <- nrow(example1_sCA)
+J <- ncol(example1_sCA)
+```
+
+The following heatmap depicts the column profiles of the data matrix, with the columns ordered based on a hierarchical clustering based on $\chi^2$-distance coupled with Ward's agglomeration method.
 
 ```{r heatmap}
-colprofiles <- prop.table(death.2019, margin = 2)
+colprofiles <- prop.table(example1_sCA, margin = 2)
 
 d.m <- as_tibble(
   colprofiles, 
@@ -58,7 +53,7 @@ d.m <- as_tibble(
     "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", 
     "70-74", "75-79", "80-84", "85-89", "90-94", "95-99", "100+")))
 
-chi2_distmat <- as.dist(sqrt(DistatisR::Chi2Dist(t(death.2019))$Distance))
+chi2_distmat <- as.dist(sqrt(DistatisR::Chi2Dist(t(example1_sCA))$Distance))
 
 dend.death <- hclust(
   chi2_distmat,
@@ -99,10 +94,10 @@ dim2get <- 4L
 rdsleft <- rep(2.319896, dim2get)
 rdsright <- rep(1.353568, dim2get) #0.5994068 
 
-ca.res <- ExPosition::epCA(death.2019, k = 19, graphs = FALSE)
+ca.res <- ExPosition::epCA(example1_sCA, k = 19, graphs = FALSE)
 
 sca.res <- sparseCA(
-  death.2019,
+  example1_sCA,
   components = dim2get,
   rdsLeft = rdsleft,
   rdsRight = rdsright
