@@ -190,14 +190,14 @@ sparseDiSTATIS <- function(
     for (i in 1:components.Cmat) {
       sGEIG.Splus[[i]] <- sparseGEIGEN(X = Splus[[i]],
                                        W = masses.Splus, k = components.Splus,
-                                init = init.Splus, seed = seed,
-                                rds = rds.Splus,
-                                grp = grp.Splus,
-                                orthogonality = orthogonality.Splus,
-                                OrthSpace = OrthSpace.Splus,
-                                projPriority = projPriority.Splus,
-                                itermaxALS = itermaxALS.Splus, itermaxPOCS = itermaxPOCS.Splus,
-                                epsALS = epsALS.Splus, epsPOCS = epsPOCS.Splus)
+                                       init = init.Splus, seed = seed,
+                                       rds = rds.Splus,
+                                       grp = grp.Splus,
+                                       orthogonality = orthogonality.Splus,
+                                       OrthSpace = OrthSpace.Splus,
+                                       projPriority = projPriority.Splus,
+                                       itermaxALS = itermaxALS.Splus, itermaxPOCS = itermaxPOCS.Splus,
+                                       epsALS = epsALS.Splus, epsPOCS = epsPOCS.Splus)
     }
   } else {
 

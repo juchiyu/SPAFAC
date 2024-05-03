@@ -13,7 +13,7 @@
 #' @param center Logical or numeric vector for centering each column of X; passed to \code{\link{scale}}.
 #' @param scale Logical or numeric vector for scaling each column of X; passed to \code{\link{scale}}.
 #' @param tol Tolerance for the convergence criterion; defaults to \code{.Machine$double.eps}.
-#' @param init.Cmat Initialization method for Cmat; defaults to "eig".
+#' @param init.Cmat Initialization method for Cmat, and it should be "svd", "eigen", or "rand"; defaults to "eig".
 #' @param init.grandX Initialization method for grandX; defaults to "svd".
 #' @param initLeft.grandX Initial values for the left side of grandX; defaults to NULL.
 #' @param initRight.grandX Initial values for the right side of grandX; defaults to NULL.
@@ -56,26 +56,26 @@
 #' # Assuming `X` is a data matrix and `column.design` is the design vector
 #' \dontrun{result <- sparseSTATIS(X = X, column.design = column.design)}
 #'
-sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE,
+sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE, Cmat.is.RV = TRUE,
+                         masses.Cmat = NULL, masses.grandX = NULL,
                       sparse.Cmat = FALSE, sparse.grandX = TRUE,
-                      components.Cmat = 0, components.grandX = 0,
+                      components.Cmat = 2, components.grandX = 2,
                       sparseOption = "variable",
                       center = TRUE, scale = TRUE,
                       tol = .Machine$double.eps,
-                      init.Cmat = "eig", init.grandX = "svd", initLeft.grandX = NULL, initRight.grandX = NULL, seed = NULL,
-                      rdsLeft.Cmat = rep(1, components.Cmat), rdsRight.Cmat = rep(1, components.Cmat),
+                      init.Cmat = "svd", init.grandX = "svd",
+                      initLeft.grandX = NULL, initRight.grandX = NULL, seed = NULL,
+                      rds.Cmat = rep(1, components.Cmat),
                       rdsLeft.grandX = rep(1, components.grandX), rdsRight.grandX = rep(1, components.grandX),
                       grp.Cmat = NULL, grpLeft.grandX = NULL, grpRight.grandX = NULL,
                       orthogonality.Cmat = "loadings",
-                      OrthSpaceLeft.Cmat = NULL, OrthSpaceRight.Cmat = NULL,
                       orthogonality.grandX = "loadings",
+                      OrthSpace.Cmat = NULL,
                       OrthSpaceLeft.grandX = NULL, OrthSpaceRight.grandX = NULL,
                       projPriority.Cmat = "orth",
-                      projPriorityLeft.Cmat = projPriority.Cmat,
-                      projPriorityRight.Cmat = projPriority.Cmat,
                       projPriority.grandX = "orth",
                       projPriorityLeft.grandX = projPriority.grandX,
-                      projPriorityRight.Slus = projPriority.grandX,
+                      projPriorityRight.grandX = projPriority.grandX,
                       itermaxALS.Cmat = 1000, itermaxPOCS.Cmat = 1000,
                       itermaxALS.grandX = 1000, itermaxPOCS.grandX = 1000,
                       epsALS.Cmat = 1e-10, epsPOCS.Cmat = 1e-10,
@@ -83,6 +83,10 @@ sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE,
 
   if ( !is.matrix(X) ){
     X <- as.matrix(X,rownames.force = TRUE)
+  }
+
+  if (sparse.Cmat == TRUE & sparse.grandX == TRUE){
+    stop("This function does not do double sparsification.")
   }
 
   if (scale == "ss1"){
@@ -116,8 +120,8 @@ sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE,
       tab.svd[[i]] <- svd(data[, tab.idx[1,i]:tab.idx[2,i]])
       tab.d[i] <- tab.svd[[i]]$d[1] # normalize the center-and-scaled tables
       alpha.vec[tab.idx[1,i]:tab.idx[2,i]] <- 1/tab.d[i]^2
-      data.proc[,tab.idx[1,i]:tab.idx[2,i]] <- data[,tab.idx[1,i]:tab.idx[2,i]]/(tab.d[i]^2)
-      data.proclist[[i]] <- data[,tab.idx[1,i]:tab.idx[2,i]]/(tab.d[i]^2)
+      data.proc[,tab.idx[1,i]:tab.idx[2,i]] <- data[,tab.idx[1,i]:tab.idx[2,i]]/(tab.d[i]^2) # in a grand table
+      data.proclist[[i]] <- data[,tab.idx[1,i]:tab.idx[2,i]]/(tab.d[i]^2) # in a list
     }
   }else{
     alpha.vec <- rep(1, length(column.design))
@@ -128,7 +132,7 @@ sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE,
   }
 
   # compute RV matrix an
-  Cmat <- GetCmat(DATA.proc, RV = Cmat.is.RV, isCube = FALSE)
+  Cmat <- GetCmat(data.proclist, RV = Cmat.is.RV, isCube = FALSE)
   ### masses for the RV matrix
   if (is.null(masses.Cmat)){
     masses.Cmat <- rep(1, nrow(Cmat))
@@ -208,8 +212,8 @@ sparseSTATIS <- function(X, column.design, mfa.normalize = TRUE,
 
     sEIG.Cmat <- list(values = eigen.Cmat$values,
                       l = eigen.Cmat$values,
-                      vectors = eigen.Cmat$vectors,
-                      u = eigen.Cmat$u,
+                      vectors = eigen.Cmat$vectors,  # (generalized) eigen vectors
+                      u = eigen.Cmat$u, # eigen vectors
                       rds = rds.Cmat,
                       f = t(t(eigen.Cmat$vectors * masses.Cmat) * sqrt(eigen.Cmat$values)),
                       iter = NULL,
