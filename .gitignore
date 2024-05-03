@@ -3,5 +3,5 @@
 .RData
 .Ruserdata
 .Rbuildignore
-docs
+#docs
 inst/doc
