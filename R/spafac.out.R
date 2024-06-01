@@ -18,7 +18,7 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
   out <- list()
   if(is_sSVD(res)) {
     out$svd$d <- res$d
-    out$svd$u <- res$U[,, drop = FALSE]
+    out$svd$u <- res$U[,, drop = FALSE] # Problem here
     out$svd$v <- res$V[,, drop = FALSE]
     out$iter <- res$iter
     out$eig <- res$d^2
@@ -74,10 +74,10 @@ spafac.out <- function(res, X, Y = NULL, LW = NULL, RW =NULL, LM = NULL, RM = NU
   }
 
   if(is_sPLS(res)) {
-    out$lx <- X %*% res$U
-    out$ly <- Y %*% res$V
-    out$sx <- res$U
-    out$sy <- res$V
+    out$lx <- X %*% res$u
+    out$ly <- Y %*% res$v
+    out$sx <- res$u
+    out$sy <- res$v
     if(is_sGSVD(res)){
       out$gsvd$LM <- LM
       out$gsvd$RM <- RM

@@ -86,87 +86,12 @@
 <span><span class="co">#&gt;     is_GSVD, is_sGSVD, is_sPLS, is_sSVD</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"example1_sCA"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">example1_sCA</span></span>
-<span><span class="co">#&gt;                1-4 5-9 15-19 20-24 25-29 30-34 40-44 45-49 50-54 55-59 60-64</span></span>
-<span><span class="co">#&gt; Blood           65  31    61    82   123   148   229   320   462   664   804</span></span>
-<span><span class="co">#&gt; Bones            5  11    32    58   109   146   259   366   501   845  1198</span></span>
-<span><span class="co">#&gt; Circulatory    192 130   380   770  1599  2971  8552 14771 24780 41853 59820</span></span>
-<span><span class="co">#&gt; Congenital     416 192   188   202   177   219   208   295   412   666   616</span></span>
-<span><span class="co">#&gt; Digestive       45  45    70   162   526  1334  2938  4775  7475 11385 12976</span></span>
-<span><span class="co">#&gt; External      1520 930  7827 15271 19413 19887 16860 16993 18017 20000 16737</span></span>
-<span><span class="co">#&gt; Genitourinary   13  10    29    63   134   260   596  1085  1820  3016  4773</span></span>
-<span><span class="co">#&gt; Infectious     214  98    79   184   435   702  1197  1909  2980  4872  6313</span></span>
-<span><span class="co">#&gt; Mental           8   6    29   148   422   802  1159  1526  2051  3095  3540</span></span>
-<span><span class="co">#&gt; Metabolic      100  74   187   401   672  1032  2261  3654  5877  9415 13127</span></span>
-<span><span class="co">#&gt; Neoplasms      334 402   617   837  1403  2286  6709 12760 23360 44948 68292</span></span>
-<span><span class="co">#&gt; Nervous        203 178   368   506   642   762  1112  1745  2576  4485  6896</span></span>
-<span><span class="co">#&gt; Respiratory    269 168   194   333   511   710  1360  2644  5117 11371 19034</span></span>
-<span><span class="co">#&gt; Skin             1   1     9     6    22    35    92   121   177   322   444</span></span>
-<span><span class="co">#&gt; Undetermined   229  43   154   348   543   611   683   759  1036  1503  1893</span></span>
-<span><span class="co">#&gt;               65-69 75-79  80-84  85-89 95-99  100+</span></span>
-<span><span class="co">#&gt; Blood          1035  1216   1211   1233   462   116</span></span>
-<span><span class="co">#&gt; Bones          1407  1801   1892   1724   643   142</span></span>
-<span><span class="co">#&gt; Circulatory   72018 98505 116178 136117 62888 13628</span></span>
-<span><span class="co">#&gt; Congenital      364   234    183    161    43     7</span></span>
-<span><span class="co">#&gt; Digestive     12740 11347  10832   9891  3118   512</span></span>
-<span><span class="co">#&gt; External      13036 11483  11639  12354  4211   769</span></span>
-<span><span class="co">#&gt; Genitourinary  6247  9586  11149  11221  3898   731</span></span>
-<span><span class="co">#&gt; Infectious     7074  7615   7590   7087  1999   334</span></span>
-<span><span class="co">#&gt; Mental         4105 11214  18802  28346 16885  3918</span></span>
-<span><span class="co">#&gt; Metabolic     15512 17371  16801  15841  5382  1084</span></span>
-<span><span class="co">#&gt; Neoplasms     82182 88073  77359  61320 10863  1434</span></span>
-<span><span class="co">#&gt; Nervous       10310 27193  39596  49140 21065  4536</span></span>
-<span><span class="co">#&gt; Respiratory   25896 40608  41591  40110 12222  2409</span></span>
-<span><span class="co">#&gt; Skin            511   648    707    648   222    62</span></span>
-<span><span class="co">#&gt; Undetermined   1954  2593   2983   3708  2704  1046</span></span>
 <span><span class="va">I</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">example1_sCA</span><span class="op">)</span></span>
 <span><span class="va">J</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">example1_sCA</span><span class="op">)</span></span></code></pre></div>
 <p>The following heatmap depicts the column profiles of the data matrix,
 with the columns ordered based on a hierarchical clustering based on
 <span class="math inline">\(\chi^2\)</span>-distance coupled with Ward’s
 agglomeration method.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">colprofiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/proportions.html" class="external-link">prop.table</a></span><span class="op">(</span><span class="va">example1_sCA</span>, margin <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">d.m</span> <span class="op">&lt;-</span> <span class="fu">as_tibble</span><span class="op">(</span></span>
-<span>  <span class="va">colprofiles</span>, </span>
-<span>  rownames <span class="op">=</span> <span class="st">"row"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">pivot_longer</span><span class="op">(</span></span>
-<span>    <span class="op">-</span><span class="fl">1</span>,</span>
-<span>    names_to <span class="op">=</span> <span class="st">"col"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>row <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
-<span>    <span class="va">row</span>, </span>
-<span>    levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1-4"</span>, <span class="st">"5-9"</span>, <span class="st">"10-14"</span>, <span class="st">"15-19"</span>, <span class="st">"20-24"</span>, <span class="st">"25-29"</span>, <span class="st">"30-34"</span>, </span>
-<span>    <span class="st">"35-39"</span>, <span class="st">"40-44"</span>, <span class="st">"45-49"</span>, <span class="st">"50-54"</span>, <span class="st">"55-59"</span>, <span class="st">"60-64"</span>, <span class="st">"65-69"</span>, </span>
-<span>    <span class="st">"70-74"</span>, <span class="st">"75-79"</span>, <span class="st">"80-84"</span>, <span class="st">"85-89"</span>, <span class="st">"90-94"</span>, <span class="st">"95-99"</span>, <span class="st">"100+"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">chi2_distmat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/dist.html" class="external-link">as.dist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu">DistatisR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DistatisR/man/Chi2Dist.html" class="external-link">Chi2Dist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">example1_sCA</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">Distance</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">dend.death</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/hclust.html" class="external-link">hclust</a></span><span class="op">(</span></span>
-<span>  <span class="va">chi2_distmat</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"ward.D2"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">gtree</span> <span class="op">&lt;-</span> <span class="fu">ggtree</span><span class="op">(</span></span>
-<span>  <span class="va">dend.death</span>,</span>
-<span>  color <span class="op">=</span> <span class="st">"darkolivegreen"</span>,</span>
-<span>  hang <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu">layout_dendrogram</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">hm</span> <span class="op">&lt;-</span> <span class="va">d.m</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">col</span>, <span class="va">row</span>, fill <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">geom_tile</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">scale_fill_gradient</span><span class="op">(</span></span>
-<span>    <span class="co"># transform = "log10",</span></span>
-<span>    low <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span>  <span class="st">"darkorchid"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">theme_minimal</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">theme</span><span class="op">(</span></span>
-<span>      text <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>color <span class="op">=</span> <span class="st">"darkolivegreen"</span><span class="op">)</span>,</span>
-<span>      axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span>, color <span class="op">=</span> <span class="st">"darkolivegreen"</span><span class="op">)</span>,</span>
-<span>      axis.text.y <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>color <span class="op">=</span> <span class="st">"darkolivegreen"</span><span class="op">)</span>,</span>
-<span>      axis.ticks <span class="op">=</span> <span class="fu">element_line</span><span class="op">(</span>color <span class="op">=</span> <span class="st">"darkolivegreen"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">""</span>, y <span class="op">=</span> <span class="st">""</span>, fill <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
-<span></span>
-<span><span class="op">(</span><span class="va">hm</span> <span class="op">%&gt;%</span> <span class="fu">insert_top</span><span class="op">(</span><span class="va">gtree</span>, height <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
 <p><img src="example1_sCA_files/figure-html/heatmap-1.png" width="700"></p>
 </div>
 <div class="section level2">
@@ -175,7 +100,7 @@ agglomeration method.</p>
 <div class="section level3">
 <h3 class="tabset" id="fixed-sparse-parameters">Fixed sparse parameters<a class="anchor" aria-label="anchor" href="#fixed-sparse-parameters"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">text_size</span> <span class="op">&lt;-</span> <span class="fl">8</span></span>
 <span><span class="va">dim2get</span> <span class="op">&lt;-</span> <span class="fl">4L</span></span>
 <span><span class="va">rdsleft</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2.319896</span>, <span class="va">dim2get</span><span class="op">)</span></span>
@@ -190,7 +115,7 @@ agglomeration method.</p>
 <span>  rdsRight <span class="op">=</span> <span class="va">rdsright</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.31805697 0.18549833 0.11569657 0.06044603</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sca.eig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  eig <span class="op">=</span> <span class="va">sca.res</span><span class="op">$</span><span class="va">eig</span>, </span>
 <span>  tau <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">sca.res</span><span class="op">$</span><span class="va">eig</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">ca.res</span><span class="op">$</span><span class="va">ExPosition.Data</span><span class="op">$</span><span class="va">eigs</span><span class="op">)</span><span class="op">)</span></span>
@@ -222,7 +147,7 @@ agglomeration method.</p>
 <div class="section level4">
 <h4 id="age-categories">Age categories<a class="anchor" aria-label="anchor" href="#age-categories"></a>
 </h4>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sca.fi.map.12</span> <span class="op">&lt;-</span> <span class="fu">createFactorMap</span><span class="op">(</span>X <span class="op">=</span> <span class="va">sca.res</span><span class="op">$</span><span class="va">fi</span>,</span>
 <span>                       col.points <span class="op">=</span> <span class="st">"#E08214"</span>, </span>
 <span>                       col.labels <span class="op">=</span> <span class="st">"#E08214"</span>,</span>
@@ -248,7 +173,7 @@ agglomeration method.</p>
 <span><span class="co">#&gt; Warning: ggrepel: 3 unlabeled data points (too many overlaps). Consider</span></span>
 <span><span class="co">#&gt; increasing max.overlaps</span></span></code></pre></div>
 <p><img src="../docs/articles/example1_sCA_files/figure-html/plot%20sparse%20CA%20age%20categories-1.png" width="700"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># cp 3 &amp; 4</span></span>
 <span><span class="va">sca.fi.map.34</span> <span class="op">&lt;-</span> <span class="fu">createFactorMap</span><span class="op">(</span>X <span class="op">=</span> <span class="va">sca.res</span><span class="op">$</span><span class="va">fi</span>,</span>
@@ -275,7 +200,7 @@ agglomeration method.</p>
 <div class="section level4">
 <h4 id="causes-of-death">Causes of death<a class="anchor" aria-label="anchor" href="#causes-of-death"></a>
 </h4>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sca.fj.map.12</span> <span class="op">&lt;-</span> <span class="fu">createFactorMap</span><span class="op">(</span>X <span class="op">=</span> <span class="va">sca.res</span><span class="op">$</span><span class="va">fj</span>,</span>
 <span>                       col.points <span class="op">=</span> <span class="st">"#2166AC"</span>, </span>
 <span>                       col.labels <span class="op">=</span> <span class="st">"#2166AC"</span>,</span>
@@ -301,7 +226,7 @@ agglomeration method.</p>
 <span><span class="co">#&gt; Warning: ggrepel: 12 unlabeled data points (too many overlaps). Consider</span></span>
 <span><span class="co">#&gt; increasing max.overlaps</span></span></code></pre></div>
 <p><img src="example1_sCA_files/figure-html/plot%20sparse%20CA%20causes%20of%20death-1.png" width="700"></p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># cp 3 &amp; 4</span></span>
 <span><span class="va">sca.fj.map.34</span> <span class="op">&lt;-</span> <span class="fu">createFactorMap</span><span class="op">(</span>X <span class="op">=</span> <span class="va">sca.res</span><span class="op">$</span><span class="va">fj</span>,</span>

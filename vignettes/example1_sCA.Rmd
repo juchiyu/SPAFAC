@@ -31,29 +31,28 @@ We begin by loading the `SPAFAC` package and the data.
 library(SPAFAC)
 data("example1_sCA")
 
-example1_sCA
 I <- nrow(example1_sCA)
 J <- ncol(example1_sCA)
 ```
 
 The following heatmap depicts the column profiles of the data matrix, with the columns ordered based on a hierarchical clustering based on $\chi^2$-distance coupled with Ward's agglomeration method.
 
-```{r heatmap}
-colprofiles <- prop.table(example1_sCA, margin = 2)
+```{r heatmap, echo = FALSE}
+colprofiles <- prop.table(example1_sCA, margin = 1)
 
 d.m <- as_tibble(
   colprofiles, 
-  rownames = "row") %>%
+  rownames = "col") %>%
   pivot_longer(
     -1,
-    names_to = "col") %>%
+    names_to = "row") %>%
   mutate(row = factor(
     row, 
     levels = c("1-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", 
     "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", 
     "70-74", "75-79", "80-84", "85-89", "90-94", "95-99", "100+")))
 
-chi2_distmat <- as.dist(sqrt(DistatisR::Chi2Dist(t(example1_sCA))$Distance))
+chi2_distmat <- as.dist(sqrt(DistatisR::Chi2Dist(example1_sCA)$Distance))
 
 dend.death <- hclust(
   chi2_distmat,

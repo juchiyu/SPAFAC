@@ -1,5 +1,5 @@
 ---
-title: "example3"
+title: "Example 3: sparse MCA analyis of questionnaire data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{example3}
@@ -16,4 +16,27 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(SPAFAC)
+
+data("example3_sMCA")
 ```
+
+
+```{r}
+IOP.phi <- phi2Mat4BurtTable(example3_sMCA[, -1])$phi2.mat
+
+
+dat.long <- example3_sMCA %>% 
+  select(-1) %>%
+  mutate(row = sprintf("Resp%03i", 1:n()), .before = Q1) %>%
+  pivot_longer(-1, names_to = "question")
+
+dat.long %>%
+  ggplot(aes(question, row, fill = value)) + 
+  geom_tile() + 
+  theme(axis.text.y = element_blank()) + 
+  labs(x = "", y = "")
+
+
+
+```
+
